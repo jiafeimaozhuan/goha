@@ -621,7 +621,11 @@ func zrangeByScoreHandle(args [][]byte) *Result {
 	if resp.Code == 200 {
 		json.Unmarshal(resp.Data, &resArray)
 	}
-	result.array = make([]map[string]string, 0, len(resArray))
+	if withscores {
+		result.array = make([]string, 0, 2*len(resArray))
+	} else {
+		result.array = make([]string, 0, len(resArray))
+	}
 	for _, item := range resArray {
 		key := item["key"].(string)
 		b, err := base64.StdEncoding.DecodeString(key)
