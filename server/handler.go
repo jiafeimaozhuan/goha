@@ -62,7 +62,7 @@ var (
 		"del":           NewCmdHandler("del", 2, 0, nil, delHandle),
 		"strlen":        NewCmdHandler("strlen", 2, 2, nil, strlenHandle),
 		"hdel":          NewCmdHandler("hdel", 3, 0, nil, hdelHandle),
-		"hexists":       NewCmdHandler("hexists", 3, 3, nil, strlenHandle),
+		"hexists":       NewCmdHandler("hexists", 3, 3, nil, hexistsHandle),
 		"hget":          NewCmdHandler("hget", 3, 3, nil, hgetHandle),
 		"hincrby":       NewCmdHandler("hincrby", 4, 4, nil, hincrbyHandle),
 		"hset":          NewCmdHandler("hset", 4, 4, nil, hsetHandle),
