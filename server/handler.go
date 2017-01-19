@@ -14,7 +14,7 @@ type Result struct {
 	data    []byte
 	status  uint32
 	integer int
-	array   []map[string]string
+	array   []string
 }
 
 const (
@@ -510,20 +510,21 @@ func zrangeHandle(args [][]byte) *Result {
 	if resp.Code == 200 {
 		json.Unmarshal(resp.Data, &resArray)
 	}
-	result.array = make([]map[string]string, 0, len(resArray))
+	if withscores {
+		result.array = make([]string, 0, 2*len(resArray))
+	} else {
+		result.array = make([]string, 0, len(resArray))
+	}
 	for _, item := range resArray {
 		key := item["key"].(string)
 		b, err := base64.StdEncoding.DecodeString(key)
 		if err != nil {
 			continue
 		}
-		tmp := map[string]string{
-			"key": utils.BytesToString(b),
-		}
+		result.array = append(result.array, utils.BytesToString(b))
 		if withscores {
-			tmp["val"] = item["val"].(string)
+			result.array = append(result.array, item["val"].(string))
 		}
-		result.array = append(result.array, tmp)
 	}
 	return result
 }
@@ -627,13 +628,10 @@ func zrangeByScoreHandle(args [][]byte) *Result {
 		if err != nil {
 			continue
 		}
-		tmp := map[string]string{
-			"key": utils.BytesToString(b),
-		}
+		result.array = append(result.array, utils.BytesToString(b))
 		if withscores {
-			tmp["val"] = item["val"].(string)
+			result.array = append(result.array, item["val"].(string))
 		}
-		result.array = append(result.array, tmp)
 	}
 	return result
 }

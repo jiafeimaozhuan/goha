@@ -95,10 +95,7 @@ func (cc *clientConn) dispatch(cmd Command) error {
 			cnt := len(res.array)
 			cc.wr.WriteArray(cnt)
 			for _, item := range res.array {
-				cc.wr.WriteBulk([]byte(item["key"]))
-				if val, ok := item["val"]; ok {
-					cc.wr.WriteBulk([]byte(val))
-				}
+				cc.wr.WriteBulk([]byte(item))
 			}
 		}
 	} else {
