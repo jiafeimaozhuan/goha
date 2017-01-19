@@ -1,5 +1,10 @@
 package defines
 
+type ServerConf struct {
+	Id   int
+	Port int
+}
+
 type HttpConf struct {
 	MaxIdleConnsPerHost   int
 	ResponseHeaderTimeout int

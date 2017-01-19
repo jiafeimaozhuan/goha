@@ -1,9 +1,9 @@
 package server
 
 import (
-	"../internal"
 	"bytes"
 	"errors"
+	"goha/internal/utils"
 	"log"
 	"net"
 	"time"
@@ -77,14 +77,14 @@ func (cc *clientConn) dispatch(cmd Command) error {
 		cc.server.releaseToken(token)
 		log.Printf("cost: %v ms", time.Since(startTS).Nanoseconds()/time.Millisecond.Nanoseconds())
 	}()
-	if handler, ok := CmdMap[internal.BytesToString(bytes.ToLower(cmd.Args[0]))]; ok {
+	if handler, ok := CmdMap[utils.BytesToString(bytes.ToLower(cmd.Args[0]))]; ok {
 		if err := handler.check(cmd.Args); err != nil {
 			cc.wr.WriteError(err.Error())
 			return nil
 		}
 		res := handler.handleFunc(cmd.Args)
 		if res.status&errStatus != 0 {
-			cc.wr.WriteError(internal.BytesToString(res.data))
+			cc.wr.WriteError(utils.BytesToString(res.data))
 		} else if res.status&successStatus != 0 {
 			cc.wr.WriteBytes(res.data)
 		} else if res.status&integerStatus != 0 {

@@ -1,11 +1,12 @@
 package server
 
 import (
-	"../internal"
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	db "goha/hustdb/handler"
+	"goha/internal/utils"
 	"strconv"
 )
 
@@ -76,7 +77,8 @@ var (
 		"echo":          NewCmdHandler("echo", 2, 2, nil, echoHandle),
 		"ping":          NewCmdHandler("ping", 1, 1, nil, pingHandle),
 	}
-	IDBHandle = &DBHandle{}
+	// IDBHandle = &DBHandle{}
+	IDBHandle = db.NewHustdbHandler()
 )
 
 func setHandle(args [][]byte) *Result {
@@ -87,14 +89,14 @@ func setHandle(args [][]byte) *Result {
 	checkNxXx := func(pos int) *Result {
 		arg := bytes.ToLower(args[pos])
 		if bytes.Compare(arg, []byte("nx")) == 0 {
-			resp := IDBHandle.HustdbExists(params)
+			resp := IDBHandle.HustdbExist(params)
 			if resp.Code == 200 {
 				return &Result{
 					status: nilStatus,
 				}
 			}
 		} else if bytes.Compare(arg, []byte("xx")) == 0 {
-			resp := IDBHandle.HustdbExists(params)
+			resp := IDBHandle.HustdbExist(params)
 			if resp.Code != 200 {
 				return &Result{
 					status: nilStatus,
@@ -111,7 +113,7 @@ func setHandle(args [][]byte) *Result {
 	checkTTL := func(pos int) *Result {
 		arg := bytes.ToLower(args[pos])
 		if bytes.Compare(arg, []byte("ex")) == 0 {
-			_, err := strconv.ParseInt(internal.BytesToString(args[pos+1]), 10, 64)
+			_, err := strconv.ParseInt(utils.BytesToString(args[pos+1]), 10, 64)
 			if err != nil {
 				return &Result{
 					status: errStatus,
@@ -120,7 +122,7 @@ func setHandle(args [][]byte) *Result {
 			}
 			params["ttl"] = args[pos+1]
 		} else if bytes.Compare(arg, []byte("px")) == 0 {
-			val, err := strconv.ParseInt(internal.BytesToString(args[pos+1]), 10, 64)
+			val, err := strconv.ParseInt(utils.BytesToString(args[pos+1]), 10, 64)
 			if err != nil {
 				return &Result{
 					status: errStatus,
@@ -209,7 +211,7 @@ func existsHandle(args [][]byte) *Result {
 	result := &Result{
 		status: integerStatus,
 	}
-	resp := IDBHandle.HustdbExists(params)
+	resp := IDBHandle.HustdbExist(params)
 	if resp.Code == 200 {
 		result.integer = 1
 	} else {
@@ -293,7 +295,7 @@ func hexistsHandle(args [][]byte) *Result {
 	result := &Result{
 		status: integerStatus,
 	}
-	if resp := IDBHandle.HustdbHexists(params); resp.Code == 200 {
+	if resp := IDBHandle.HustdbHexist(params); resp.Code == 200 {
 		result.integer = 1
 	}
 	return result
@@ -319,7 +321,7 @@ func hgetHandle(args [][]byte) *Result {
 
 func hincrbyHandle(args [][]byte) *Result {
 	result := &Result{}
-	_, err := strconv.ParseInt(internal.BytesToString(args[3]), 10, 64)
+	_, err := strconv.ParseInt(utils.BytesToString(args[3]), 10, 64)
 	if err != nil {
 		result.status = errStatus
 		result.data = []byte("ERR hash value is not an integer")
@@ -437,7 +439,7 @@ func zaddHandle(args [][]byte) *Result {
 	}
 	ch := make(chan int, argc/2)
 	for i := 0; i < argc; i += 2 {
-		_, err := strconv.ParseFloat(internal.BytesToString(args[2+i]), 64)
+		_, err := strconv.ParseFloat(utils.BytesToString(args[2+i]), 64)
 		if err != nil {
 			return &Result{
 				status: errStatus,
@@ -472,13 +474,13 @@ func zrangeHandle(args [][]byte) *Result {
 	result := &Result{
 		status: arrayStatus,
 	}
-	start, err := strconv.ParseInt(internal.BytesToString(args[2]), 10, 64)
+	start, err := strconv.ParseInt(utils.BytesToString(args[2]), 10, 64)
 	if err != nil {
 		result.status = errStatus
 		result.data = []byte("ERR value is not an integer or out of range")
 		return result
 	}
-	end, err := strconv.ParseInt(internal.BytesToString(args[3]), 10, 64)
+	end, err := strconv.ParseInt(utils.BytesToString(args[3]), 10, 64)
 	if err != nil {
 		result.status = errStatus
 		result.data = []byte("ERR value is not an integer or out of range")
@@ -516,7 +518,7 @@ func zrangeHandle(args [][]byte) *Result {
 			continue
 		}
 		tmp := map[string]string{
-			"key": internal.BytesToString(b),
+			"key": utils.BytesToString(b),
 		}
 		if withscores {
 			tmp["val"] = item["val"].(string)
@@ -539,7 +541,7 @@ func zrangeByScoreHandle(args [][]byte) *Result {
 	if bytes.IndexByte(args[2], '(') == 0 {
 		args[2] = args[2][1:]
 	}
-	start, err = strconv.ParseFloat(internal.BytesToString(args[2]), 64)
+	start, err = strconv.ParseFloat(utils.BytesToString(args[2]), 64)
 	if err != nil {
 		result.status = errStatus
 		result.data = []byte("ERR min or max is not a float")
@@ -548,7 +550,7 @@ func zrangeByScoreHandle(args [][]byte) *Result {
 	if bytes.IndexByte(args[3], '(') == 0 {
 		args[3] = args[3][1:]
 	}
-	end, err = strconv.ParseFloat(internal.BytesToString(args[3]), 64)
+	end, err = strconv.ParseFloat(utils.BytesToString(args[3]), 64)
 	if err != nil {
 		result.status = errStatus
 		result.data = []byte("ERR min or max is not a float")
@@ -575,8 +577,8 @@ func zrangeByScoreHandle(args [][]byte) *Result {
 	}
 	preprocessLimit := func(pos int) *Result {
 		if bytes.Compare(bytes.ToLower(args[pos]), []byte("limit")) == 0 {
-			_, err1 := strconv.ParseInt(internal.BytesToString(args[pos+1]), 10, 64)
-			_, err2 := strconv.ParseInt(internal.BytesToString(args[pos+2]), 10, 64)
+			_, err1 := strconv.ParseInt(utils.BytesToString(args[pos+1]), 10, 64)
+			_, err2 := strconv.ParseInt(utils.BytesToString(args[pos+2]), 10, 64)
 			if err1 != nil || err2 != nil {
 				result.status = errStatus
 				result.data = []byte("ERR value is not an integer or out of range")
@@ -626,7 +628,7 @@ func zrangeByScoreHandle(args [][]byte) *Result {
 			continue
 		}
 		tmp := map[string]string{
-			"key": internal.BytesToString(b),
+			"key": utils.BytesToString(b),
 		}
 		if withscores {
 			tmp["val"] = item["val"].(string)

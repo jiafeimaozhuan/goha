@@ -13,6 +13,8 @@ import (
 	"path/filepath"
 
 	"github.com/cihub/seelog"
+
+	server "goha/server"
 )
 
 func main() {
@@ -42,7 +44,7 @@ func main() {
 	seelog.ReplaceLogger(logger)
 	defer seelog.Flush()
 
-	cfpath := filepath.Join(conf, "ha.json")
+	cfpath := filepath.Join(conf, "server.json")
 
 	if !utils.LoadGlobalConf(cfpath) {
 		seelog.Critical("LoadGlobalConf error")
@@ -57,4 +59,10 @@ func main() {
 	hc.Init(gconf.HealthCheck.HealthCheckCycle)
 	binlog.Init(gconf.Binlog)
 	httpman.InitHttp(gconf.Http, gconf.HealthCheck.Timeout)
+
+	srv, err := server.NewServer(fmt.Sprintf(":%d", gconf.Server.Port), gconf.Concurrency)
+	if err != nil {
+		panic(err)
+	}
+	srv.Run()
 }

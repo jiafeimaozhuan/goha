@@ -1,7 +1,6 @@
 package server
 
 import (
-	"../internal"
 	"net"
 	"sync"
 	"sync/atomic"
@@ -12,18 +11,13 @@ var (
 )
 
 type Server struct {
-	cfg               *internal.Config
 	rwlock            *sync.RWMutex
 	concurrentLimiter *TokenLimiter
 	clients           map[uint32]*clientConn
 	listener          net.Listener
 }
 
-const (
-	tokenLimit = 1000
-)
-
-func NewServer(addr string) (*Server, error) {
+func NewServer(addr string, tokenLimit int) (*Server, error) {
 	s := &Server{
 		concurrentLimiter: NewTokenLimiter(tokenLimit),
 		rwlock:            &sync.RWMutex{},

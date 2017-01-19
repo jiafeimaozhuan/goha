@@ -5,10 +5,12 @@ import (
 )
 
 type HaConf struct {
+	Server      def.ServerConf
 	Hustdb      def.HustdbConf
 	Http        def.HttpConf
 	HealthCheck def.HealthCheckConf
 	Binlog      def.BinlogConf
+	Concurrency int
 }
 
 var configPath string
