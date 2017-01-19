@@ -38,7 +38,7 @@ func Init(path string) bool {
 	if !LoadHashTable(path) {
 		return false
 	}
-	return RefreshGlobleHashtable()
+	return GenGlobleHashtable()
 }
 
 func LoadHashTable(path string) bool {

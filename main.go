@@ -6,8 +6,10 @@ import (
 	"goha/hustdb/binlog"
 	"goha/hustdb/comm"
 	hc "goha/hustdb/healthcheck"
+	"goha/hustdb/peers"
 	"goha/internal/httpman"
 	"goha/internal/utils"
+
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -59,6 +61,11 @@ func main() {
 	hc.Init(gconf.HealthCheck.HealthCheckCycle)
 	binlog.Init(gconf.Binlog)
 	httpman.InitHttp(gconf.Http, gconf.HealthCheck.Timeout)
+	bpath := filepath.Join(conf, "backends.json")
+	if !peers.Init(bpath) {
+		seelog.Error("Peers Init Failed")
+		return
+	}
 
 	srv, err := server.NewServer(fmt.Sprintf(":%d", gconf.Server.Port), gconf.Concurrency)
 	if err != nil {
