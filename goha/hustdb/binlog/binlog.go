@@ -1,8 +1,8 @@
 package binlog
 
 import (
-	"hustdbha/hustdb/comm"
-	"hustdbha/utils"
+	"goha/hustdb/comm"
+	"goha/internal/utils"
 
 	"github.com/cihub/seelog"
 )

@@ -3,7 +3,7 @@ package httpman
 import (
 	"bytes"
 	"crypto/tls"
-	def "hustdbha/defines"
+	def "goha/internal/defines"
 
 	"io"
 	"io/ioutil"

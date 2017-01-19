@@ -2,9 +2,9 @@ package comm
 
 import (
 	"bytes"
-	def "hustdbha/defines"
-	"hustdbha/httpman"
-	"mongo/utils"
+	def "goha/internal/defines"
+	"goha/internal/httpman"
+	"goha/internal/utils"
 	"net/http"
 	"net/url"
 	"strconv"

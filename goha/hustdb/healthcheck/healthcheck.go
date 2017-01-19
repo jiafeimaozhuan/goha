@@ -1,8 +1,8 @@
 package healthcheck
 
 import (
-	"hustdbha/hustdb/comm"
-	"hustdbha/hustdb/peers"
+	"goha/hustdb/comm"
+	"goha/hustdb/peers"
 	"time"
 
 	"github.com/cihub/seelog"

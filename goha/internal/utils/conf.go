@@ -1,7 +1,7 @@
 package utils
 
 import (
-	def "hustdbha/defines"
+	def "goha/internal/defines"
 )
 
 type HaConf struct {

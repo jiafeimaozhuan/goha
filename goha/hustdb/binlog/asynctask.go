@@ -1,7 +1,7 @@
 package binlog
 
 import (
-	def "hustdbha/defines"
+	def "goha/internal/defines"
 )
 
 var (

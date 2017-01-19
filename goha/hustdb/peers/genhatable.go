@@ -1,8 +1,8 @@
 package peers
 
 import (
-	"hustdbha/hustdb/comm"
-	"hustdbha/utils"
+	"goha/hustdb/comm"
+	"goha/internal/utils"
 	"sync"
 
 	"github.com/cihub/seelog"
@@ -49,7 +49,9 @@ func LoadHashTable(path string) bool {
 
 func RefreshHashTable(path string) bool {
 	HaTable.Rwlock.Lock()
-	return utils.LoadConf(path, &HaTable.HashTable)
+	rc := utils.LoadConf(path, &HaTable.HashTable)
+	HaTable.Rwlock.Unlock()
+	return rc
 }
 
 func GenGlobleHashtable() bool {

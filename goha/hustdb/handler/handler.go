@@ -1,6 +1,6 @@
 package handler
 
-import "hustdbha/hustdb/comm"
+import "goha/hustdb/comm"
 
 type HustdbHandler struct {
 }
