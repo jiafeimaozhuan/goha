@@ -1,7 +1,7 @@
 {
 	"hashtable":
 	[
-		{ "region": [0, 512], "backends": {"master":{"host":"10.120.100.178:9999","alive":true}, "slave":{"host":"10.120.100.178:9998","alive":true} }},
-		{ "region": [512, 1024], "backends": {"master":{"host":"10.120.100.178:9999","alive":true}, "slave":{"host":"10.120.100.178:9998","alive":true} }}
+		{ "region": [0, 512], "backends": {"master":{"host":"10.203.6.37:8085","alive":true}, "slave":{"host":"10.203.6.38:8085","alive":true} }},
+		{ "region": [512, 1024], "backends": {"master":{"host":"10.203.6.38:8085","alive":true}, "slave":{"host":"10.203.6.37:8085","alive":true} }}
 	]
 }
