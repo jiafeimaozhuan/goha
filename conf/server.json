@@ -1,7 +1,0 @@
-{
-    "Server": {
-        "Id": 0,
-        "Port": 55555
-    },
-    "Concurrency": 1024
-}
