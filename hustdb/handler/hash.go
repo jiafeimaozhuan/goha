@@ -131,7 +131,7 @@ func (p *HustdbHandler) HustdbHdel(args map[string][]byte) *comm.HustdbResponse 
 
 	retChan := make(chan *comm.HustdbResponse, len(backends))
 	for _, backend := range backends {
-		go comm.HustdbDel(backend, args, retChan)
+		go comm.HustdbHdel(backend, args, retChan)
 	}
 
 	delSucc := 0
