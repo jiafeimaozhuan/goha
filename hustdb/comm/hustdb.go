@@ -2,6 +2,7 @@ package comm
 
 import (
 	"bytes"
+	"fmt"
 	def "goha/internal/defines"
 	"goha/internal/httpman"
 	"goha/internal/utils"
@@ -33,7 +34,7 @@ func ComposeUrl(backend string, op string, fieldmap map[string][]byte) string {
 	var buffer bytes.Buffer
 	buffer.WriteString("http://")
 	buffer.WriteString(backend)
-	buffer.WriteString("hustdb/")
+	buffer.WriteString("/hustdb/")
 	buffer.WriteString(op)
 	buffer.WriteString("?")
 	for k, v := range fieldmap {
@@ -49,15 +50,19 @@ func ComposeUrl(backend string, op string, fieldmap map[string][]byte) string {
 /* Hustdb kv API */
 func HustdbPut(backend string, args map[string][]byte, val []byte, retChan chan *HustdbResponse) {
 	url := ComposeUrl(backend, "put", args)
-	httpCode, _, _ := HttpPost(url, val)
-	retChan <- &HustdbResponse{Code: httpCode, Backend: backend}
+	httpCode, _, respHeader := HttpPost(url, val)
+	fmt.Printf("url : %v\nhttpCode : %v\n", url, httpCode)
+	ver, _ := strconv.Atoi(respHeader.Get("Version"))
+	retChan <- &HustdbResponse{Code: httpCode, Version: ver, Backend: backend}
 }
 
 func HustdbGet(backend string, args map[string][]byte, retChan chan *HustdbResponse) {
 	url := ComposeUrl(backend, "get", args)
 	httpCode, body, header := HttpGet(url)
-	ver, _ := strconv.Atoi(header.Get("ver"))
+	fmt.Printf("header :%v\n", header)
+	ver, _ := strconv.Atoi(header.Get("Version"))
 
+	fmt.Printf("url : %v\nhttpCode : %v\n", url, httpCode)
 	retChan <- &HustdbResponse{Code: httpCode, Data: body, Version: ver}
 }
 
@@ -76,27 +81,32 @@ func HustdbExist(backend string, args map[string][]byte, retChan chan *HustdbRes
 /* Hustdb hash API */
 func HustdbHset(backend string, args map[string][]byte, val []byte, retChan chan *HustdbResponse) {
 	url := ComposeUrl(backend, "hset", args)
-	httpCode, _, _ := HttpPost(url, val)
-	retChan <- &HustdbResponse{Code: httpCode, Backend: backend}
+	httpCode, _, respHeader := HttpPost(url, val)
+	fmt.Printf("url : %v\nhttpCode : %v\n", url, httpCode)
+	ver, _ := strconv.Atoi(respHeader.Get("Version"))
+	retChan <- &HustdbResponse{Code: httpCode, Version: ver, Backend: backend}
 }
 
 func HustdbHget(backend string, args map[string][]byte, retChan chan *HustdbResponse) {
 	url := ComposeUrl(backend, "hget", args)
 	httpCode, body, respHeader := HttpGet(url)
-	ver, _ := strconv.Atoi(respHeader.Get("ver"))
+	ver, _ := strconv.Atoi(respHeader.Get("Version"))
 
+	fmt.Printf("url : %v\nhttpCode : %v\n", url, httpCode)
 	retChan <- &HustdbResponse{Code: httpCode, Data: body, Version: ver}
 }
 
 func HustdbHdel(backend string, args map[string][]byte, retChan chan *HustdbResponse) {
 	url := ComposeUrl(backend, "hdel", args)
 	httpCode, _, _ := HttpGet(url)
+	fmt.Printf("url : %v\nhttpCode : %v\n", url, httpCode)
 	retChan <- &HustdbResponse{Code: httpCode, Backend: backend}
 }
 
 func HustdbHexist(backend string, args map[string][]byte, retChan chan *HustdbResponse) {
 	url := ComposeUrl(backend, "hexist", args)
 	httpCode, _, _ := HttpGet(url)
+	fmt.Printf("url : %v\nhttpCode : %v\n", url, httpCode)
 	retChan <- &HustdbResponse{Code: httpCode}
 }
 
@@ -128,7 +138,7 @@ func HustdbZadd(backend string, args map[string][]byte, val []byte, retChan chan
 func HustdbZscore(backend string, args map[string][]byte, val []byte, retChan chan *HustdbResponse) {
 	url := ComposeUrl(backend, "zscore", args)
 	httpCode, body, respHeader := HttpPost(url, val)
-	ver, _ := strconv.Atoi(respHeader.Get("ver"))
+	ver, _ := strconv.Atoi(respHeader.Get("Version"))
 
 	retChan <- &HustdbResponse{Code: httpCode, Data: body, Version: ver}
 }

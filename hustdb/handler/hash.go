@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	binlog "goha/hustdb/binlog"
 	"goha/hustdb/comm"
 	"goha/hustdb/peers"
@@ -60,19 +61,23 @@ func (p *HustdbHandler) HustdbHset(args map[string][]byte) *comm.HustdbResponse 
 	}
 
 	putSucc := 0
+	maxVer := 0
 	var putFailedBackend string
 	var putSuccessBackend string
 	hustdbResp := &comm.HustdbResponse{Code: 0}
 	for ix := 0; ix < cap(retChan); ix++ {
-		select {
-		case resp := <-retChan:
-			if resp.Code == comm.HttpOk {
-				putSucc++
-				hustdbResp.Code = comm.HttpOk
-				putSuccessBackend = resp.Backend
-			} else {
-				putFailedBackend = resp.Backend
+		resp := <-retChan
+		fmt.Printf("Hset resp :%v\n", resp)
+		if resp.Code == comm.HttpOk {
+			putSucc++
+			hustdbResp.Code = comm.HttpOk
+			putSuccessBackend = resp.Backend
+			if resp.Version > maxVer {
+				hustdbResp.Version = resp.Version
+				maxVer = resp.Version
 			}
+		} else {
+			putFailedBackend = resp.Backend
 		}
 	}
 
@@ -81,6 +86,7 @@ func (p *HustdbHandler) HustdbHset(args map[string][]byte) *comm.HustdbResponse 
 		binlog.Do(putSuccessBackend, putFailedBackend, "hset", args, val)
 	}
 
+	fmt.Printf("Hset  :%v\n", hustdbResp)
 	return hustdbResp
 }
 
