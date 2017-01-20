@@ -55,6 +55,7 @@ func (cc *clientConn) Run() {
 					cc.wr.WriteError("ERR " + err.Error())
 					cc.wr.Flush()
 				}
+				return err
 			}
 			for _, cmd := range cmds {
 				/*
