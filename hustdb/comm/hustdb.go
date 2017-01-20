@@ -7,7 +7,6 @@ import (
 	"goha/internal/httpman"
 	"goha/internal/utils"
 	"net/http"
-	"net/url"
 	"strconv"
 	"strings"
 
@@ -40,7 +39,7 @@ func ComposeUrl(backend string, op string, fieldmap map[string][]byte) string {
 	for k, v := range fieldmap {
 		buffer.WriteString(k)
 		buffer.WriteString("=")
-		buffer.WriteString(url.QueryEscape(string(v)))
+		buffer.WriteString((string(v)))
 		buffer.WriteString("&")
 	}
 
@@ -180,7 +179,7 @@ func HustdbZrangebyscore(backend string, args map[string][]byte) (int, []byte) {
 }
 
 func HustdbAlive(backend string) int {
-	url := utils.ConcatString("http://", backend, "/hustdb/status.html")
+	url := utils.ConcatString("http://", backend, "/status.html")
 	httpCode, _, _ := HttpGetWithTimeout(url)
 	fmt.Printf("url : %v\nhttpCode : %v\n", url, httpCode)
 	return httpCode

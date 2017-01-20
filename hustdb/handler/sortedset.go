@@ -133,6 +133,14 @@ func (p *HustdbHandler) HustdbZrangebyscore(args map[string][]byte) *comm.Hustdb
 		return NilHustdbResponse
 	}
 
+	if _, ok := args["offset"]; !ok {
+		args["offset"] = []byte("0")
+	}
+
+	if _, ok := args["size"]; !ok {
+		args["size"] = []byte("1000")
+	}
+
 	for _, backend := range backends {
 		code, body := comm.HustdbZrangebyscore(backend, args)
 		if code == comm.HttpOk {

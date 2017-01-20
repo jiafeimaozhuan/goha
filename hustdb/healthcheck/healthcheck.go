@@ -14,6 +14,7 @@ var (
 
 func Init(cycle int) {
 	HealthCheckCycle = time.Duration(cycle)
+	HealthCheckLoop()
 }
 
 type PeerStatusInfo struct {
@@ -76,7 +77,11 @@ func CheckOnce() {
 
 	if needAdjust {
 		peers.RefreshGlobleHashtable()
+		//fmt.Printf("HaTable : %#v\n", *(peers.HaTable.HashTable[0].Backends))
+		//fmt.Printf("HaTable : %#v\n", *(peers.HaTable.HashTable[1].Backends))
 	}
+	//fmt.Printf("HaTable : %#v\n", *(peers.HaTable.HashTable[0].Backends))
+	//fmt.Printf("HaTable : %#v\n", *(peers.HaTable.HashTable[1].Backends))
 }
 
 func HealthCheckLoop() {
