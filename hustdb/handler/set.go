@@ -62,24 +62,14 @@ func (p *HustdbHandler) HustdbSismember(args map[string][]byte) *comm.HustdbResp
 	}
 
 	backends := peers.FetchHustdbPeers(string(key))
-	if len(backends) == 0 {
-		return NilHustdbResponse
-	}
-
-	retChan := make(chan *comm.HustdbResponse, len(backends))
 	for _, backend := range backends {
-		go comm.HustdbSismember(backend, args, key, retChan)
-	}
-
-	hustdbResp := &comm.HustdbResponse{Code: comm.HttpNotFound}
-	for ix := 0; ix < cap(retChan); ix++ {
-		resp := <-retChan
+		resp := comm.HustdbSismember(backend, args, key)
 		if resp.Code == comm.HttpOk {
-			hustdbResp.Code = comm.HttpOk
+			return resp
 		}
 	}
 
-	return hustdbResp
+	return &comm.HustdbResponse{Code: 0}
 }
 
 func (p *HustdbHandler) HustdbSrem(args map[string][]byte) *comm.HustdbResponse {

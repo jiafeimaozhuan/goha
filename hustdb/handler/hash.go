@@ -14,13 +14,32 @@ func (p *HustdbHandler) HustdbHget(args map[string][]byte) *comm.HustdbResponse 
 	}
 
 	backends := peers.FetchHustdbPeers(key)
+	for _, backend := range backends {
+		resp := comm.HustdbHget(backend, args)
+		if resp.Code == comm.HttpOk {
+			return resp
+		}
+	}
+
+	return &comm.HustdbResponse{Code: 0}
+
+}
+
+func (p *HustdbHandler) HustdbHget2(args map[string][]byte) *comm.HustdbResponse {
+	ikey, ok := args["key"]
+	key := string(ikey)
+	if !ok {
+		return NilHustdbResponse
+	}
+
+	backends := peers.FetchHustdbPeers(key)
 	if len(backends) == 0 {
 		return NilHustdbResponse
 	}
 
 	retChan := make(chan *comm.HustdbResponse, len(backends))
 	for _, backend := range backends {
-		go comm.HustdbHget(backend, args, retChan)
+		go comm.HustdbHget2(backend, args, retChan)
 	}
 
 	maxVer := 0
@@ -66,7 +85,6 @@ func (p *HustdbHandler) HustdbHset(args map[string][]byte) *comm.HustdbResponse 
 	hustdbResp := &comm.HustdbResponse{Code: 0}
 	for ix := 0; ix < cap(retChan); ix++ {
 		resp := <-retChan
-		//fmt.Printf("Hset resp :%v\n", resp)
 		if resp.Code == comm.HttpOk {
 			putSucc++
 			hustdbResp.Code = comm.HttpOk
@@ -85,35 +103,28 @@ func (p *HustdbHandler) HustdbHset(args map[string][]byte) *comm.HustdbResponse 
 		binlog.Do(putSuccessBackend, putFailedBackend, "hset", args, val)
 	}
 
-	//fmt.Printf("Hset  :%v\n", hustdbResp)
 	return hustdbResp
 }
 
 func (p *HustdbHandler) HustdbHexist(args map[string][]byte) *comm.HustdbResponse {
-	ikey, ok := args["key"]
-	key := string(ikey)
+	key, ok := args["key"]
 	if !ok {
 		return NilHustdbResponse
 	}
-	backends := peers.FetchHustdbPeers(key)
+
+	backends := peers.FetchHustdbPeers(string(key))
 	if len(backends) == 0 {
 		return NilHustdbResponse
 	}
 
-	retChan := make(chan *comm.HustdbResponse, len(backends))
 	for _, backend := range backends {
-		go comm.HustdbHexist(backend, args, retChan)
-	}
-
-	hustdbResp := &comm.HustdbResponse{Code: comm.HttpNotFound}
-	for ix := 0; ix < cap(retChan); ix++ {
-		resp := <-retChan
+		resp := comm.HustdbHexist(backend, args)
 		if resp.Code == comm.HttpOk {
-			hustdbResp.Code = comm.HttpOk
+			return resp
 		}
 	}
 
-	return hustdbResp
+	return &comm.HustdbResponse{Code: 0}
 }
 
 func (p *HustdbHandler) HustdbHdel(args map[string][]byte) *comm.HustdbResponse {
