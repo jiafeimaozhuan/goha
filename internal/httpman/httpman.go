@@ -63,7 +63,6 @@ func GetSession() *Session {
 
 func HttpBasicWithHeader(url, method string, data []byte, headers map[string]string, username, passwd string, shorttimeout bool) (int, []byte, http.Header) {
 	defer Protect()
-	begin := time.Now()
 	var body io.Reader
 	if len(data) == 0 {
 		body = nil
@@ -100,7 +99,6 @@ func HttpBasicWithHeader(url, method string, data []byte, headers map[string]str
 		seelog.Errorf("Read_Response_Body_Error: %v", err)
 		return http.StatusInternalServerError, nil, nil
 	}
-	seelog.Debugf("HttpBasic Time Cost : %v", time.Since(begin))
 	return resp.StatusCode, respBody, resp.Header
 }
 
