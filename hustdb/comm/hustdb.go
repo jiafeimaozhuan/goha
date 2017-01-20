@@ -78,11 +78,11 @@ func HustdbDel(backend string, args map[string][]byte, retChan chan *HustdbRespo
 	retChan <- &HustdbResponse{Code: httpCode, Backend: backend}
 }
 
-func HustdbExist(backend string, args map[string][]byte, retChan chan *HustdbResponse) {
+func HustdbExist(backend string, args map[string][]byte) *HustdbResponse {
 	url := ComposeUrl(backend, "exist", args)
 	httpCode, _, _ := HttpGet(url)
 	//fmt.Printf("url : %v\nhttpCode : %v\n", url, httpCode)
-	retChan <- &HustdbResponse{Code: httpCode}
+	return &HustdbResponse{Code: httpCode}
 }
 
 /* Hustdb hash API */
@@ -119,11 +119,10 @@ func HustdbHdel(backend string, args map[string][]byte, retChan chan *HustdbResp
 	retChan <- &HustdbResponse{Code: httpCode, Backend: backend}
 }
 
-func HustdbHexist(backend string, args map[string][]byte, retChan chan *HustdbResponse) {
+func HustdbHexist(backend string, args map[string][]byte) *HustdbResponse {
 	url := ComposeUrl(backend, "hexist", args)
 	httpCode, _, _ := HttpGet(url)
-	//fmt.Printf("url : %v\nhttpCode : %v\n", url, httpCode)
-	retChan <- &HustdbResponse{Code: httpCode}
+	return &HustdbResponse{Code: httpCode}
 }
 
 /* Hustdb set API */
@@ -141,11 +140,10 @@ func HustdbSrem(backend string, args map[string][]byte, val []byte, retChan chan
 	retChan <- &HustdbResponse{Code: httpCode, Backend: backend}
 }
 
-func HustdbSismember(backend string, args map[string][]byte, val []byte, retChan chan *HustdbResponse) {
+func HustdbSismember(backend string, args map[string][]byte, val []byte) *HustdbResponse {
 	url := ComposeUrl(backend, "sismember", args)
 	httpCode, _, _ := HttpPost(url, val)
-	//fmt.Printf("url : %v\nhttpCode : %v\n", url, httpCode)
-	retChan <- &HustdbResponse{Code: httpCode}
+	return &HustdbResponse{Code: httpCode}
 }
 
 func HustdbZadd(backend string, args map[string][]byte, val []byte, retChan chan *HustdbResponse) {
@@ -179,11 +177,10 @@ func HustdbZrem(backend string, args map[string][]byte, val []byte, retChan chan
 	retChan <- &HustdbResponse{Code: httpCode, Backend: backend}
 }
 
-func HustdbZismember(backend string, args map[string][]byte, val []byte, retChan chan *HustdbResponse) {
+func HustdbZismember(backend string, args map[string][]byte, val []byte) *HustdbResponse {
 	url := ComposeUrl(backend, "zismember", args)
 	httpCode, _, _ := HttpPost(url, val)
-	//fmt.Printf("url : %v\nhttpCode : %v\n", url, httpCode)
-	retChan <- &HustdbResponse{Code: httpCode}
+	return &HustdbResponse{Code: httpCode}
 }
 
 func HustdbZrangebyrank(backend string, args map[string][]byte) (int, []byte) {
@@ -210,6 +207,7 @@ func HustdbAlive(backend string) int {
 }
 
 func HustdbBinlog(backend string, args map[string][]byte, val []byte) int {
+	defer Protect()
 	url := ComposeUrl(backend, "binlog", args)
 	httpCode, _, _ := HttpPost(url, val)
 
@@ -262,21 +260,21 @@ func HustdbHincrby(backend string, args map[string][]byte) *HustdbResponse {
 }
 
 func HttpPostWithTimeout(url string, data []byte) (int, []byte, http.Header) {
-	Protect()
+	defer Protect()
 	return httpman.HttpBasicWithTimeout(url, "POST", data, hustdbReqHeader, hustdbUser, hustdbPwd)
 }
 
 func HttpPost(url string, data []byte) (int, []byte, http.Header) {
-	Protect()
+	defer Protect()
 	return httpman.HttpBasic(url, "POST", data, hustdbReqHeader, hustdbUser, hustdbPwd)
 }
 
 func HttpGetWithTimeout(url string) (int, []byte, http.Header) {
-	Protect()
+	defer Protect()
 	return httpman.HttpBasicWithTimeout(url, "GET", nil, hustdbReqHeader, hustdbUser, hustdbPwd)
 }
 
 func HttpGet(url string) (int, []byte, http.Header) {
-	Protect()
+	defer Protect()
 	return httpman.HttpBasic(url, "GET", nil, hustdbReqHeader, hustdbUser, hustdbPwd)
 }

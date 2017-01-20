@@ -19,24 +19,14 @@ func (p *HustdbHandler) HustdbZismember(args map[string][]byte) *comm.HustdbResp
 	delete(args, "key")
 
 	backends := peers.FetchHustdbPeers(tb)
-	if len(backends) == 0 {
-		return NilHustdbResponse
-	}
-
-	retChan := make(chan *comm.HustdbResponse, len(backends))
 	for _, backend := range backends {
-		go comm.HustdbZismember(backend, args, key, retChan)
-	}
-
-	hustdbResp := &comm.HustdbResponse{Code: comm.HttpNotFound}
-	for ix := 0; ix < cap(retChan); ix++ {
-		resp := <-retChan
+		resp := comm.HustdbZismember(backend, args, key)
 		if resp.Code == comm.HttpOk {
-			hustdbResp.Code = comm.HttpOk
+			return resp
 		}
 	}
 
-	return hustdbResp
+	return &comm.HustdbResponse{Code: 0}
 }
 
 func (p *HustdbHandler) HustdbZscore2(args map[string][]byte) *comm.HustdbResponse {
@@ -174,8 +164,7 @@ func (p *HustdbHandler) HustdbZrangebyscore(args map[string][]byte) *comm.Hustdb
 		}
 	}
 
-	hustdbResp := &comm.HustdbResponse{Code: comm.HttpNotFound}
-	return hustdbResp
+	return &comm.HustdbResponse{Code: comm.HttpNotFound}
 }
 
 func (p *HustdbHandler) HustdbZrem(args map[string][]byte) *comm.HustdbResponse {
@@ -240,6 +229,5 @@ func (p *HustdbHandler) HustdbZrangebyrank(args map[string][]byte) *comm.HustdbR
 		}
 	}
 
-	hustdbResp := &comm.HustdbResponse{Code: comm.HttpNotFound}
-	return hustdbResp
+	return &comm.HustdbResponse{Code: comm.HttpNotFound}
 }

@@ -10,7 +10,6 @@ import (
 )
 
 func (p *HustdbHandler) HustdbGet2(args map[string][]byte) *comm.HustdbResponse {
-	startTs := time.Now()
 	key, ok := args["key"]
 	if !ok {
 		return NilHustdbResponse
@@ -30,28 +29,24 @@ func (p *HustdbHandler) HustdbGet2(args map[string][]byte) *comm.HustdbResponse 
 	hustdbResp := &comm.HustdbResponse{Code: 0}
 	for ix := 0; ix < cap(retChan); ix++ {
 		resp := <-retChan
-		//fmt.Printf("Resp : %v\n", resp)
 		if resp.Code == comm.HttpOk && resp.Version > maxVer {
-			hustdbResp.Code = comm.HttpOk
 			maxVer = resp.Version
-			hustdbResp.Data = resp.Data
+			hustdbResp = resp
 		}
 	}
-
-	seelog.Debugf("Get Time Elapsed : %v", time.Since(startTs))
 
 	return hustdbResp
 }
 
 func (p *HustdbHandler) HustdbGet(args map[string][]byte) *comm.HustdbResponse {
+	startTs := time.Now()
+	defer seelog.Debugf("Get Time Elapsed : %v", time.Since(startTs))
 	key, ok := args["key"]
 	if !ok {
 		return NilHustdbResponse
 	}
 
 	backends := peers.FetchHustdbPeers(string(key))
-
-	hustdbResp := &comm.HustdbResponse{Code: 0}
 	for _, backend := range backends {
 		resp := comm.HustdbGet(backend, args)
 		if resp.Code == comm.HttpOk {
@@ -59,7 +54,7 @@ func (p *HustdbHandler) HustdbGet(args map[string][]byte) *comm.HustdbResponse {
 		}
 	}
 
-	return hustdbResp
+	return &comm.HustdbResponse{Code: 0}
 }
 
 func (p *HustdbHandler) HustdbPut(args map[string][]byte) *comm.HustdbResponse {
@@ -116,24 +111,14 @@ func (p *HustdbHandler) HustdbExist(args map[string][]byte) *comm.HustdbResponse
 	}
 
 	backends := peers.FetchHustdbPeers(string(key))
-	if len(backends) == 0 {
-		return NilHustdbResponse
-	}
-
-	retChan := make(chan *comm.HustdbResponse, len(backends))
 	for _, backend := range backends {
-		go comm.HustdbExist(backend, args, retChan)
-	}
-
-	hustdbResp := &comm.HustdbResponse{Code: comm.HttpNotFound}
-	for ix := 0; ix < cap(retChan); ix++ {
-		resp := <-retChan
+		resp := comm.HustdbExist(backend, args)
 		if resp.Code == comm.HttpOk {
-			hustdbResp.Code = comm.HttpOk
+			return resp
 		}
 	}
 
-	return hustdbResp
+	return &comm.HustdbResponse{Code: 0}
 }
 
 func (p *HustdbHandler) HustdbDel(args map[string][]byte) *comm.HustdbResponse {

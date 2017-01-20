@@ -49,14 +49,15 @@ func LoadHashTable(path string) bool {
 
 func RefreshHashTable(path string) bool {
 	HaTable.Rwlock.Lock()
+	defer HaTable.Rwlock.Unlock()
 	rc := utils.LoadConf(path, &HaTable.HashTable)
-	HaTable.Rwlock.Unlock()
 	return rc
 }
 
 func GenGlobleHashtable() bool {
 	ghTable := make([]BackendInfo, comm.HustdbTableSize)
 	HaTable.Rwlock.RLock()
+	defer HaTable.Rwlock.Unlock()
 	for _, peer := range HaTable.HashTable {
 		if len(peer.Region) != 2 {
 			seelog.Critical("Globalhashtable Format Error")
@@ -68,12 +69,12 @@ func GenGlobleHashtable() bool {
 	}
 
 	globalhashtable = &ghTable
-	HaTable.Rwlock.RUnlock()
 	return true
 }
 
 func RefreshGlobleHashtable() bool {
 	HaTable.Rwlock.RLock()
+	HaTable.Rwlock.RUnlock()
 	for _, peer := range HaTable.HashTable {
 		if len(peer.Region) != 2 {
 			seelog.Critical("Globalhashtable Format Error")
@@ -84,7 +85,6 @@ func RefreshGlobleHashtable() bool {
 		}
 	}
 
-	HaTable.Rwlock.RUnlock()
 	return true
 }
 

@@ -40,6 +40,7 @@ func RefreshGlobalHaTable(peer *PeerStatusInfo, status bool) bool {
 }
 
 func CheckOnce() {
+	defer comm.Protect()
 	peers.HaTable.Rwlock.RLock()
 	retChan := make(chan bool, 2*len(peers.HaTable.HashTable))
 	for idx, item := range peers.HaTable.HashTable {
@@ -94,6 +95,7 @@ func HealthCheckLoop() {
 }
 
 func IsAlive(peer *PeerStatusInfo, retChan chan bool, callback func(peer *PeerStatusInfo, status bool) bool) {
+	defer comm.Protect()
 	code := comm.HustdbAlive(peer.Host)
 	if code != comm.HttpOk && peer.Alive {
 		retChan <- callback(peer, false)
