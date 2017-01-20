@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	binlog "goha/hustdb/binlog"
 	"goha/hustdb/comm"
 	"goha/hustdb/peers"
@@ -27,7 +26,7 @@ func (p *HustdbHandler) HustdbGet(args map[string][]byte) *comm.HustdbResponse {
 	hustdbResp := &comm.HustdbResponse{Code: 0}
 	for ix := 0; ix < cap(retChan); ix++ {
 		resp := <-retChan
-		fmt.Printf("Resp : %v\n", resp)
+		//fmt.Printf("Resp : %v\n", resp)
 		if resp.Code == comm.HttpOk && resp.Version > maxVer {
 			hustdbResp.Code = comm.HttpOk
 			maxVer = resp.Version
@@ -35,7 +34,7 @@ func (p *HustdbHandler) HustdbGet(args map[string][]byte) *comm.HustdbResponse {
 		}
 	}
 
-	fmt.Printf("Get Resp : %v\n", hustdbResp)
+	//fmt.Printf("Get Resp : %v\n", hustdbResp)
 	return hustdbResp
 }
 

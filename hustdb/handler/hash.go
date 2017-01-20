@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	binlog "goha/hustdb/binlog"
 	"goha/hustdb/comm"
 	"goha/hustdb/peers"
@@ -67,7 +66,7 @@ func (p *HustdbHandler) HustdbHset(args map[string][]byte) *comm.HustdbResponse 
 	hustdbResp := &comm.HustdbResponse{Code: 0}
 	for ix := 0; ix < cap(retChan); ix++ {
 		resp := <-retChan
-		fmt.Printf("Hset resp :%v\n", resp)
+		//fmt.Printf("Hset resp :%v\n", resp)
 		if resp.Code == comm.HttpOk {
 			putSucc++
 			hustdbResp.Code = comm.HttpOk
@@ -86,7 +85,7 @@ func (p *HustdbHandler) HustdbHset(args map[string][]byte) *comm.HustdbResponse 
 		binlog.Do(putSuccessBackend, putFailedBackend, "hset", args, val)
 	}
 
-	fmt.Printf("Hset  :%v\n", hustdbResp)
+	//fmt.Printf("Hset  :%v\n", hustdbResp)
 	return hustdbResp
 }
 
