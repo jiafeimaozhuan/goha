@@ -4,9 +4,13 @@ import (
 	binlog "goha/hustdb/binlog"
 	"goha/hustdb/comm"
 	"goha/hustdb/peers"
+	"time"
+
+	"github.com/cihub/seelog"
 )
 
 func (p *HustdbHandler) HustdbGet(args map[string][]byte) *comm.HustdbResponse {
+	startTs := time.Now()
 	key, ok := args["key"]
 	if !ok {
 		return NilHustdbResponse
@@ -34,11 +38,13 @@ func (p *HustdbHandler) HustdbGet(args map[string][]byte) *comm.HustdbResponse {
 		}
 	}
 
-	//fmt.Printf("Get Resp : %v\n", hustdbResp)
+	seelog.Debugf("Get Time Elapsed : %v", time.Since(startTs))
+
 	return hustdbResp
 }
 
 func (p *HustdbHandler) HustdbPut(args map[string][]byte) *comm.HustdbResponse {
+	startTs := time.Now()
 	key, ok := args["key"]
 	if !ok {
 		return NilHustdbResponse
@@ -80,6 +86,7 @@ func (p *HustdbHandler) HustdbPut(args map[string][]byte) *comm.HustdbResponse {
 		binlog.Do(putSuccessBackend, putFailedBackend, "put", args, key)
 	}
 
+	seelog.Debugf("Put Time Elapsed : %v", time.Since(startTs))
 	return hustdbResp
 }
 
