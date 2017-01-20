@@ -9,7 +9,7 @@ import (
 	"github.com/cihub/seelog"
 )
 
-func (p *HustdbHandler) HustdbGet(args map[string][]byte) *comm.HustdbResponse {
+func (p *HustdbHandler) HustdbGet2(args map[string][]byte) *comm.HustdbResponse {
 	startTs := time.Now()
 	key, ok := args["key"]
 	if !ok {
@@ -23,7 +23,7 @@ func (p *HustdbHandler) HustdbGet(args map[string][]byte) *comm.HustdbResponse {
 
 	retChan := make(chan *comm.HustdbResponse, len(backends))
 	for _, backend := range backends {
-		go comm.HustdbGet(backend, args, retChan)
+		go comm.HustdbGet2(backend, args, retChan)
 	}
 
 	maxVer := 0
@@ -39,6 +39,25 @@ func (p *HustdbHandler) HustdbGet(args map[string][]byte) *comm.HustdbResponse {
 	}
 
 	seelog.Debugf("Get Time Elapsed : %v", time.Since(startTs))
+
+	return hustdbResp
+}
+
+func (p *HustdbHandler) HustdbGet(args map[string][]byte) *comm.HustdbResponse {
+	key, ok := args["key"]
+	if !ok {
+		return NilHustdbResponse
+	}
+
+	backends := peers.FetchHustdbPeers(string(key))
+
+	hustdbResp := &comm.HustdbResponse{Code: 0}
+	for _, backend := range backends {
+		resp := comm.HustdbGet(backend, args)
+		if resp.Code == comm.HttpOk {
+			return resp
+		}
+	}
 
 	return hustdbResp
 }

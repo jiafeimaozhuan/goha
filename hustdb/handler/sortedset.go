@@ -39,7 +39,7 @@ func (p *HustdbHandler) HustdbZismember(args map[string][]byte) *comm.HustdbResp
 	return hustdbResp
 }
 
-func (p *HustdbHandler) HustdbZscore(args map[string][]byte) *comm.HustdbResponse {
+func (p *HustdbHandler) HustdbZscore2(args map[string][]byte) *comm.HustdbResponse {
 	itb, ok := args["tb"]
 	tb := string(itb)
 	if !ok {
@@ -58,7 +58,7 @@ func (p *HustdbHandler) HustdbZscore(args map[string][]byte) *comm.HustdbRespons
 
 	retChan := make(chan *comm.HustdbResponse, len(backends))
 	for _, backend := range backends {
-		go comm.HustdbZscore(backend, args, key, retChan)
+		go comm.HustdbZscore2(backend, args, key, retChan)
 	}
 
 	maxVer := 0
@@ -71,6 +71,32 @@ func (p *HustdbHandler) HustdbZscore(args map[string][]byte) *comm.HustdbRespons
 		if resp.Version > maxVer {
 			maxVer = resp.Version
 			hustdbResp.Data = resp.Data
+		}
+	}
+
+	return hustdbResp
+}
+
+func (p *HustdbHandler) HustdbZscore(args map[string][]byte) *comm.HustdbResponse {
+	itb, ok := args["tb"]
+	tb := string(itb)
+	if !ok {
+		return NilHustdbResponse
+	}
+	key, ok := args["key"]
+	if !ok {
+		return NilHustdbResponse
+	}
+	delete(args, "key")
+
+	backends := peers.FetchHustdbPeers(tb)
+
+	hustdbResp := &comm.HustdbResponse{Code: 0}
+	for _, backend := range backends {
+		resp := comm.HustdbZscore(backend, args, key)
+
+		if resp.Code == comm.HttpOk {
+			return resp
 		}
 	}
 

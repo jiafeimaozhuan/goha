@@ -53,7 +53,15 @@ func HustdbPut(backend string, args map[string][]byte, val []byte, retChan chan 
 	retChan <- &HustdbResponse{Code: httpCode, Backend: backend}
 }
 
-func HustdbGet(backend string, args map[string][]byte, retChan chan *HustdbResponse) {
+func HustdbGet(backend string, args map[string][]byte) *HustdbResponse {
+	url := ComposeUrl(backend, "get", args)
+	httpCode, body, _ := HttpGet(url)
+
+	//fmt.Printf("url : %v\nhttpCode : %v\n", url, httpCode)
+	return &HustdbResponse{Code: httpCode, Data: body}
+}
+
+func HustdbGet2(backend string, args map[string][]byte, retChan chan *HustdbResponse) {
 	url := ComposeUrl(backend, "get", args)
 	httpCode, body, header := HttpGet(url)
 	//fmt.Printf("header :%v\n", header)
@@ -86,7 +94,16 @@ func HustdbHset(backend string, args map[string][]byte, val []byte, retChan chan
 	retChan <- &HustdbResponse{Code: httpCode, Version: ver, Backend: backend}
 }
 
-func HustdbHget(backend string, args map[string][]byte, retChan chan *HustdbResponse) {
+func HustdbHget(backend string, args map[string][]byte) *HustdbResponse {
+	url := ComposeUrl(backend, "hget", args)
+	httpCode, body, respHeader := HttpGet(url)
+	ver, _ := strconv.Atoi(respHeader.Get("Version"))
+
+	//fmt.Printf("url : %v\nhttpCode : %v\n", url, httpCode)
+	return &HustdbResponse{Code: httpCode, Data: body, Version: ver}
+}
+
+func HustdbHget2(backend string, args map[string][]byte, retChan chan *HustdbResponse) {
 	url := ComposeUrl(backend, "hget", args)
 	httpCode, body, respHeader := HttpGet(url)
 	ver, _ := strconv.Atoi(respHeader.Get("Version"))
@@ -138,7 +155,15 @@ func HustdbZadd(backend string, args map[string][]byte, val []byte, retChan chan
 	retChan <- &HustdbResponse{Code: httpCode, Backend: backend}
 }
 
-func HustdbZscore(backend string, args map[string][]byte, val []byte, retChan chan *HustdbResponse) {
+func HustdbZscore(backend string, args map[string][]byte, val []byte) *HustdbResponse {
+	url := ComposeUrl(backend, "zscore", args)
+	httpCode, body, _ := HttpPost(url, val)
+
+	//fmt.Printf("url : %v\nhttpCode : %v\n", url, httpCode)
+	return &HustdbResponse{Code: httpCode, Data: body}
+}
+
+func HustdbZscore2(backend string, args map[string][]byte, val []byte, retChan chan *HustdbResponse) {
 	url := ComposeUrl(backend, "zscore", args)
 	httpCode, body, respHeader := HttpPost(url, val)
 	ver, _ := strconv.Atoi(respHeader.Get("Version"))

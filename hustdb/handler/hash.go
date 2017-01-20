@@ -14,13 +14,33 @@ func (p *HustdbHandler) HustdbHget(args map[string][]byte) *comm.HustdbResponse 
 	}
 
 	backends := peers.FetchHustdbPeers(key)
+
+	hustdbResp := &comm.HustdbResponse{Code: 0}
+	for _, backend := range backends {
+		resp := comm.HustdbHget(backend, args)
+		if resp.Code == comm.HttpOk {
+			return resp
+		}
+	}
+
+	return hustdbResp
+}
+
+func (p *HustdbHandler) HustdbHget2(args map[string][]byte) *comm.HustdbResponse {
+	ikey, ok := args["key"]
+	key := string(ikey)
+	if !ok {
+		return NilHustdbResponse
+	}
+
+	backends := peers.FetchHustdbPeers(key)
 	if len(backends) == 0 {
 		return NilHustdbResponse
 	}
 
 	retChan := make(chan *comm.HustdbResponse, len(backends))
 	for _, backend := range backends {
-		go comm.HustdbHget(backend, args, retChan)
+		go comm.HustdbHget2(backend, args, retChan)
 	}
 
 	maxVer := 0
