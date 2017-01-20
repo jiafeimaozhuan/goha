@@ -3,8 +3,8 @@ package server
 import (
 	"bytes"
 	"errors"
+	"github.com/cihub/seelog"
 	"goha/internal/utils"
-	"log"
 	"net"
 	"time"
 )
@@ -57,10 +57,12 @@ func (cc *clientConn) Run() {
 				}
 			}
 			for _, cmd := range cmds {
-				log.Printf("raw: %v\n", string(cmd.Raw))
-				for _, args := range cmd.Args {
-					log.Printf("args: %v\n", string(args))
-				}
+				/*
+					log.Printf("raw: %v\n", string(cmd.Raw))
+					for _, args := range cmd.Args {
+						log.Printf("args: %v\n", string(args))
+					}
+				*/
 				cc.dispatch(cmd)
 			}
 			if err := cc.wr.Flush(); err != nil {
@@ -75,7 +77,7 @@ func (cc *clientConn) dispatch(cmd Command) error {
 	startTS := time.Now()
 	defer func() {
 		cc.server.releaseToken(token)
-		log.Printf("cost: %v ms", time.Since(startTS).Nanoseconds()/time.Millisecond.Nanoseconds())
+		seelog.Debugf("cost: %v ms", time.Since(startTS).Nanoseconds()/time.Millisecond.Nanoseconds())
 	}()
 	if handler, ok := CmdMap[utils.BytesToString(bytes.ToLower(cmd.Args[0]))]; ok {
 		if err := handler.check(cmd.Args); err != nil {
