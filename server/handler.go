@@ -9,8 +9,6 @@ import (
 
 	db "../hustdb/handler"
 	"../internal/utils"
-
-	"sync"
 )
 
 type Result struct {
