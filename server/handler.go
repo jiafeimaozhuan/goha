@@ -8,8 +8,6 @@ import (
 	db "goha/hustdb/handler"
 	"goha/internal/utils"
 	"strconv"
-
-	"sync"
 )
 
 type Result struct {
@@ -81,25 +79,13 @@ var (
 	}
 	// IDBHandle = &DBHandle{}
 	IDBHandle = db.NewHustdbHandler()
-
-	pool *sync.Pool = &sync.Pool{
-		New: func() interface{} {
-			obj := make(map[string][]byte)
-			return obj
-		},
-	}
 )
 
 func setHandle(args [][]byte) *Result {
 	argc := len(args)
-	params := pool.Get().(map[string][]byte)
-	defer func() {
-		for key, _ := range params {
-			delete(params, key)
-		}
-		pool.Put(params)
-	}()
-	params["key"] = args[1]
+	params := map[string][]byte{
+		"key": args[1],
+	}
 	checkNxXx := func(pos int) *Result {
 		arg := bytes.ToLower(args[pos])
 		if bytes.Compare(arg, []byte("nx")) == 0 {
@@ -202,14 +188,9 @@ func setHandle(args [][]byte) *Result {
 }
 
 func getHandle(args [][]byte) *Result {
-	params := pool.Get().(map[string][]byte)
-	defer func() {
-		for key, _ := range params {
-			delete(params, key)
-		}
-		pool.Put(params)
-	}()
-	params["key"] = args[1]
+	params := map[string][]byte{
+		"key": args[1],
+	}
 	resp := IDBHandle.HustdbGet(params)
 	if resp.Code == 200 {
 		return &Result{
