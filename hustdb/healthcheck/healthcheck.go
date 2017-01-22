@@ -1,9 +1,10 @@
 package healthcheck
 
 import (
-	"goha/hustdb/comm"
-	"goha/hustdb/peers"
 	"time"
+
+	"../comm"
+	"../peers"
 
 	"github.com/cihub/seelog"
 )
@@ -78,6 +79,7 @@ func CheckOnce() {
 
 	if needAdjust {
 		peers.RefreshGlobleHashtable()
+		//peers.SaveHashTable(filepath.Join(utils.GetGlobalConfPath(), "backends.json"))
 		//fmt.Printf("HaTable : %#v\n", *(peers.HaTable.HashTable[0].Backends))
 		//fmt.Printf("HaTable : %#v\n", *(peers.HaTable.HashTable[1].Backends))
 	}

@@ -3,12 +3,14 @@ package main
 import (
 	"flag"
 	"fmt"
-	"goha/hustdb/binlog"
-	"goha/hustdb/comm"
-	hc "goha/hustdb/healthcheck"
-	"goha/hustdb/peers"
-	"goha/internal/httpman"
-	"goha/internal/utils"
+
+	"./hustdb/peers"
+	"./internal/httpman"
+	"./internal/utils"
+
+	"./hustdb/binlog"
+	"./hustdb/comm"
+	hc "./hustdb/healthcheck"
 
 	"os"
 	"os/exec"
@@ -16,7 +18,7 @@ import (
 
 	"github.com/cihub/seelog"
 
-	server "goha/server"
+	server "./server"
 )
 
 func main() {

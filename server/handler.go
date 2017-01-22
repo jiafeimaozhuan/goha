@@ -5,9 +5,12 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	db "goha/hustdb/handler"
-	"goha/internal/utils"
 	"strconv"
+
+	db "../hustdb/handler"
+	"../internal/utils"
+
+	"sync"
 )
 
 type Result struct {
