@@ -1,10 +1,11 @@
 package handler
 
 import (
-	binlog "goha/hustdb/binlog"
-	"goha/hustdb/comm"
-	"goha/hustdb/peers"
 	"time"
+
+	binlog "../binlog"
+	"../comm"
+	"../peers"
 
 	"github.com/cihub/seelog"
 )

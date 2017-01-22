@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"goha/hustdb/binlog"
-	"goha/hustdb/comm"
-	"goha/hustdb/peers"
+	"../binlog"
+	"../comm"
+	"../peers"
 )
 
 func (p *HustdbHandler) HustdbZismember(args map[string][]byte) *comm.HustdbResponse {

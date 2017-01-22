@@ -3,10 +3,12 @@ package server
 import (
 	"bytes"
 	"errors"
-	"github.com/cihub/seelog"
-	"goha/internal/utils"
 	"net"
 	"time"
+
+	"../internal/utils"
+
+	"github.com/cihub/seelog"
 )
 
 var (

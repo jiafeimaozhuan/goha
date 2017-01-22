@@ -1,7 +1,7 @@
 package peers
 
 import (
-	"goha/internal/utils"
+	"../../internal/utils"
 )
 
 func FetchHustdbMaster(key string) string {

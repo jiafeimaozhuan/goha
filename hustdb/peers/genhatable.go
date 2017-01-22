@@ -1,9 +1,10 @@
 package peers
 
 import (
-	"goha/hustdb/comm"
-	"goha/internal/utils"
 	"sync"
+
+	"../../internal/utils"
+	"../comm"
 
 	"github.com/cihub/seelog"
 )

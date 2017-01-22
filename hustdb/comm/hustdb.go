@@ -3,12 +3,13 @@ package comm
 import (
 	"bytes"
 	"fmt"
-	def "goha/internal/defines"
-	"goha/internal/httpman"
-	"goha/internal/utils"
 	"net/http"
 	"strconv"
 	"strings"
+
+	def "../../internal/defines"
+	"../../internal/httpman"
+	"../../internal/utils"
 
 	"github.com/cihub/seelog"
 )

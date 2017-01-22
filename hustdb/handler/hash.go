@@ -1,9 +1,10 @@
 package handler
 
 import (
-	binlog "goha/hustdb/binlog"
-	"goha/hustdb/comm"
-	"goha/hustdb/peers"
+	"../comm"
+	"../peers"
+
+	binlog "../binlog"
 )
 
 func (p *HustdbHandler) HustdbHget(args map[string][]byte) *comm.HustdbResponse {
