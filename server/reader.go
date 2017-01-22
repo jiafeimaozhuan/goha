@@ -202,6 +202,9 @@ func (rd *Reader) readCommands(leftover *int) ([]Command, error) {
 		*leftover = rd.end - rd.start
 	}
 	if len(cmds) > 0 {
+		if len(rd.buf) > 1024*1024 {
+			rd.start, rd.end = 0, 0
+		}
 		return cmds, nil
 	}
 	if rd.rd == nil {
