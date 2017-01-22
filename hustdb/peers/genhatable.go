@@ -29,6 +29,17 @@ type BackendInfo struct {
 	Slave  BackendDetail `json:"slave,omitempty"`
 }
 
+type HustdbTable struct {
+	Table []*HustdbItem `json:"table,omitempty"`
+}
+
+type HustdbItem struct {
+	Item struct {
+		Key []int    `json:"key,omitempty"`
+		Val []string `json:"val,omitempty"`
+	} `json:"item,omitempty"`
+}
+
 var HaTable *HaTableStruct
 
 type GlobalHashTable *[]BackendInfo
@@ -36,24 +47,69 @@ type GlobalHashTable *[]BackendInfo
 var globalhashtable GlobalHashTable
 
 func Init(path string) bool {
-	if !LoadHashTable(path) {
+	if !LoadHustdbTable(path) {
+		return false
+	}
+	if !GenHashTable() {
 		return false
 	}
 	return GenGlobleHashtable()
 }
 
-func LoadHashTable(path string) bool {
-	HaTable = new(HaTableStruct)
-	HaTable.Rwlock = sync.RWMutex{}
-	return utils.LoadConf(path, &HaTable.HashTable)
+var hustdbTable *HustdbTable
+
+func LoadHustdbTable(path string) bool {
+	hustdbTable = new(HustdbTable)
+	return utils.LoadConf(path, hustdbTable)
 }
 
+func GenHashTable() bool {
+	HaTable = new(HaTableStruct)
+	HaTable.Rwlock = sync.RWMutex{}
+
+	HaTable.Rwlock.Lock()
+	defer HaTable.Rwlock.Unlock()
+	HaTable.HashTable = make([]*PeerInfo, 0, len(hustdbTable.Table))
+	for _, item := range hustdbTable.Table {
+		if peer, ok := HustdbItem2PeerInfo(item); ok {
+			HaTable.HashTable = append(HaTable.HashTable, peer)
+		} else {
+			return false
+		}
+	}
+
+	return true
+}
+
+func HustdbItem2PeerInfo(item *HustdbItem) (*PeerInfo, bool) {
+	if len(item.Item.Key) != 2 || len(item.Item.Val) != 2 {
+		return nil, false
+	}
+
+	peer := new(PeerInfo)
+	peer.Region = item.Item.Key
+
+	peer.Backends = &BackendInfo{
+		Master: BackendDetail{
+			Host:  item.Item.Val[0],
+			Alive: true,
+		},
+		Slave: BackendDetail{
+			Host:  item.Item.Val[1],
+			Alive: true,
+		},
+	}
+	return peer, true
+}
+
+/*
 func RefreshHashTable(path string) bool {
 	HaTable.Rwlock.Lock()
 	defer HaTable.Rwlock.Unlock()
 	rc := utils.LoadConf(path, &HaTable.HashTable)
 	return rc
 }
+*/
 
 func GenGlobleHashtable() bool {
 	ghTable := make([]BackendInfo, comm.HustdbTableSize)
