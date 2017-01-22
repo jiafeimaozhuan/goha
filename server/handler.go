@@ -92,7 +92,7 @@ var (
 
 func setHandle(args [][]byte) *Result {
 	argc := len(args)
-	params = pool.Get().(map[string][]byte)
+	params := pool.Get().(map[string][]byte)
 	defer func() {
 		for key, _ := range params {
 			delete(params, key)
@@ -202,7 +202,7 @@ func setHandle(args [][]byte) *Result {
 }
 
 func getHandle(args [][]byte) *Result {
-	params = pool.Get().(map[string][]byte)
+	params := pool.Get().(map[string][]byte)
 	defer func() {
 		for key, _ := range params {
 			delete(params, key)
