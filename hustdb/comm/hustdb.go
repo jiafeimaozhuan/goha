@@ -108,7 +108,7 @@ func HustdbExist(backend string, args map[string][]byte) *HustdbResponse {
 func HustdbHset(backend string, args map[string][]byte, val []byte, retChan chan *HustdbResponse) {
 	url := ComposeUrl(backend, "hset", args)
 	httpCode, _, respHeader := HttpPost(url, val)
-	fmt.Printf("url : %v\nhttpCode : %v\n", url, httpCode)
+	// fmt.Printf("url : %v\nhttpCode : %v\n", url, httpCode)
 	ver, _ := strconv.Atoi(respHeader.Get("Version"))
 	retChan <- &HustdbResponse{Code: httpCode, Version: ver, Backend: backend}
 }
@@ -118,7 +118,7 @@ func HustdbHget(backend string, args map[string][]byte) *HustdbResponse {
 	httpCode, body, respHeader := HttpGet(url)
 	ver, _ := strconv.Atoi(respHeader.Get("Version"))
 
-	fmt.Printf("url : %v\nhttpCode : %v\n", url, httpCode)
+	// fmt.Printf("url : %v\nhttpCode : %v\n", url, httpCode)
 	return &HustdbResponse{Code: httpCode, Data: body, Version: ver}
 }
 
