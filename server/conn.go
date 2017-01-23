@@ -129,7 +129,7 @@ func (cc *clientConn) Context() interface{} {
 
 func (cc *clientConn) ReadPipeline() []Command {
 	cmds := cc.cmds
-	c.cmds = nil
+	cc.cmds = nil
 	return cmds
 }
 
