@@ -40,6 +40,7 @@ type clientConn struct {
 	wr     *Writer
 	rd     *Reader
 	ctx    interface{}
+	cmds   []Command
 }
 
 func (cc *clientConn) Run() {
@@ -59,13 +60,14 @@ func (cc *clientConn) Run() {
 				}
 				return err
 			}
-			for _, cmd := range cmds {
-				/*
-					log.Printf("raw: %v\n", string(cmd.Raw))
-					for _, args := range cmd.Args {
-						log.Printf("args: %v\n", string(args))
-					}
-				*/
+			cc.cmds = cmds
+			for len(cc.cmds) > 0 {
+				cmd := cc.cmds[0]
+				if len(cc.cmds) == 1 {
+					cc.cmds = nil
+				} else {
+					cc.cmds = cc.cmds[1:]
+				}
 				cc.dispatch(cmd)
 			}
 			if err := cc.wr.Flush(); err != nil {
@@ -123,4 +125,14 @@ func (cc *clientConn) SetContext(v interface{}) {
 
 func (cc *clientConn) Context() interface{} {
 	return cc.ctx
+}
+
+func (cc *clientConn) ReadPipeline() []Command {
+	cmds := cc.cmds
+	c.cmds = nil
+	return cmds
+}
+
+func (cc *clientConn) PeekPipeline() []Command {
+	return cc.cmds
 }
