@@ -168,9 +168,10 @@ func HustdbSismember(backend string, args map[string][]byte, val []byte) *Hustdb
 
 func HustdbZadd(backend string, args map[string][]byte, val []byte, retChan chan *HustdbResponse) {
 	url := ComposeUrl(backend, "zadd", args)
-	httpCode, _, _ := HttpPost(url, val)
+	httpCode, _, respHeader := HttpPost(url, val)
 	//fmt.Printf("url : %v\nhttpCode : %v\n", url, httpCode)
-	retChan <- &HustdbResponse{Code: httpCode, Backend: backend}
+	ver, _ := strconv.Atoi(respHeader.Get("Version"))
+	retChan <- &HustdbResponse{Code: httpCode, Backend: backend, Version: ver}
 }
 
 func HustdbZscore(backend string, args map[string][]byte, val []byte) *HustdbResponse {

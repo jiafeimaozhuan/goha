@@ -462,7 +462,11 @@ func zaddHandle(args [][]byte) *Result {
 		}
 		go func(params map[string][]byte) {
 			resp := IDBHandle.HustdbZadd(params)
-			ch <- resp.Code
+			if resp.Version == 1 {
+				ch <- resp.Code
+			} else {
+				ch <- 404
+			}
 		}(params)
 	}
 	for i := 0; i < argc; i += 2 {
