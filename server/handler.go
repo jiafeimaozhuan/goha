@@ -57,7 +57,7 @@ func NewCmdHandler(cmdName string, minParams, maxParams int, check CheckFunc, ha
 
 var (
 	CmdMap = map[string]*CmdHandler{
-		"set":           NewCmdHandler("set", 3, 8, nil, setHandle),
+		"set":           NewCmdHandler("set", 3, 0, nil, setHandle),
 		"get":           NewCmdHandler("get", 2, 2, nil, getHandle),
 		"exists":        NewCmdHandler("exists", 2, 2, nil, existsHandle),
 		"del":           NewCmdHandler("del", 2, 0, nil, delHandle),
@@ -72,7 +72,7 @@ var (
 		"srem":          NewCmdHandler("srem", 3, 0, nil, sremHandle),
 		"zadd":          NewCmdHandler("zadd", 4, 0, nil, zaddHandle),
 		"zrange":        NewCmdHandler("zrange", 4, 5, nil, zrangeHandle),
-		"zrangebyscore": NewCmdHandler("zrangebyscore", 4, 8, nil, zrangeByScoreHandle),
+		"zrangebyscore": NewCmdHandler("zrangebyscore", 4, 0, nil, zrangeByScoreHandle),
 		"zrem":          NewCmdHandler("zrem", 3, 0, nil, zremHandle),
 		"zscore":        NewCmdHandler("zscore", 3, 3, nil, zscoreHandle),
 		"echo":          NewCmdHandler("echo", 2, 2, nil, echoHandle),
@@ -143,39 +143,33 @@ func setHandle(args [][]byte) *Result {
 		}
 		return nil
 	}
-	switch argc {
-	case 3:
-	case 4:
-		if result := checkNxXx(3); result != nil {
-			return result
-		}
-	case 5:
-		if result := checkTTL(3); result != nil {
-			return result
-		}
-	case 6:
-		if result := checkTTL(3); result != nil {
-			return result
-		}
-		if result := checkNxXx(5); result != nil {
-			return result
-		}
-	case 7:
-		if result := checkTTL(3); result != nil {
-			return result
-		}
-		if result := checkTTL(5); result != nil {
-			return result
-		}
-	case 8:
-		if result := checkTTL(3); result != nil {
-			return result
-		}
-		if result := checkTTL(5); result != nil {
-			return result
-		}
-		if result := checkNxXx(7); result != nil {
-			return result
+
+
+	for i := 3; i < argc; i ++ {
+		arg := bytes.ToLower(args[i])
+		if bytes.Compare(arg, []byte("nx")) == 0 || bytes.Compare(arg, []byte("xx")) == 0 {
+			if result := checkNxXx(i); result != nil {
+				return result
+			}
+		} else if bytes.Compare(arg, []byte("ex")) == 0 || bytes.Compare(arg, []byte("px")) == 0 { 
+			//At least ex have one argument
+			if i >= argc - 1 {
+				return &Result{
+					status: errStatus,
+					data:   []byte("ERR syntax error"),
+				}
+			} else {
+				if result := checkTTL(i); result != nil {
+					return result
+				}
+				i+=1
+			}
+			
+		} else {
+			return &Result{
+				status: errStatus,
+				data:   []byte("ERR syntax error"),
+			}
 		}
 	}
 	params["val"] = args[2]
@@ -552,9 +546,13 @@ func zrangeByScoreHandle(args [][]byte) *Result {
 
 	var start, end float64
 	var err error
+	var start_open_flag bool = false
+	var end_open_flag bool = false
+	var min, max string
 	if bytes.IndexByte(args[2], '(') == 0 {
 		args[2] = args[2][1:]
-	}
+		start_open_flag = true
+	} 
 	start, err = strconv.ParseFloat(utils.BytesToString(args[2]), 64)
 	if err != nil {
 		result.status = errStatus
@@ -563,7 +561,8 @@ func zrangeByScoreHandle(args [][]byte) *Result {
 	}
 	if bytes.IndexByte(args[3], '(') == 0 {
 		args[3] = args[3][1:]
-	}
+		end_open_flag = true
+	} 
 	end, err = strconv.ParseFloat(utils.BytesToString(args[3]), 64)
 	if err != nil {
 		result.status = errStatus
@@ -573,61 +572,67 @@ func zrangeByScoreHandle(args [][]byte) *Result {
 	if end < start {
 		return result
 	}
+	if start_open_flag {
+		min = fmt.Sprintf("%f", start+1)
+	} else{
+		min = fmt.Sprintf("%f", start)
+	}
+
+	if end_open_flag {
+		max = fmt.Sprintf("%f", end-1)
+	} else {
+		max = fmt.Sprintf("%f", end)
+	}
+	
 	params := map[string][]byte{
 		"tb":  args[1],
-		"min": args[2],
-		"max": args[3],
+		"min": []byte(min),
+		"max": []byte(max),
 	}
 	preprocessWithscores := func() *Result {
-		if bytes.Compare(bytes.ToLower(args[4]), []byte("withscores")) == 0 {
-			params["noval"] = []byte("false")
-			withscores = true
-		} else {
-			result.status = errStatus
-			result.data = []byte("ERR syntax error")
-			return result
-		}
+		params["noval"] = []byte("false")
+		withscores = true
 		return nil
 	}
 	preprocessLimit := func(pos int) *Result {
-		if bytes.Compare(bytes.ToLower(args[pos]), []byte("limit")) == 0 {
-			_, err1 := strconv.ParseInt(utils.BytesToString(args[pos+1]), 10, 64)
-			_, err2 := strconv.ParseInt(utils.BytesToString(args[pos+2]), 10, 64)
-			if err1 != nil || err2 != nil {
-				result.status = errStatus
-				result.data = []byte("ERR value is not an integer or out of range")
-				return result
-			}
-			params["offset"] = args[pos+1]
-			params["size"] = args[pos+2]
-		} else {
+		_, err1 := strconv.ParseInt(utils.BytesToString(args[pos+1]), 10, 64)
+		_, err2 := strconv.ParseInt(utils.BytesToString(args[pos+2]), 10, 64)
+		if err1 != nil || err2 != nil {
 			result.status = errStatus
-			result.data = []byte("ERR syntax error")
+			result.data = []byte("ERR value is not an integer or out of range")
 			return result
 		}
+		params["offset"] = args[pos+1]
+		params["size"] = args[pos+2]
+
 		return nil
 	}
 
-	switch argc {
-	case 4:
-	case 5:
-		if res := preprocessWithscores(); res != nil {
-			return res
+	for i := 4; i < argc; i ++ {
+		arg := bytes.ToLower(args[i])
+		if bytes.Compare(arg, []byte("withscores")) == 0 {
+			if result := preprocessWithscores(); result != nil {
+				return result
+			}
+		} else if bytes.Compare(arg, []byte("limit")) == 0 {
+			//At least limit have two arguments
+			if i >= argc - 2 {
+				return &Result{
+					status: errStatus,
+					data:   []byte("ERR syntax error"),
+				}
+			} else {
+				if result := preprocessLimit(i); result != nil {
+					return result
+				}
+				i+=2
+			}		
+		} else {
+			return &Result{
+				status: errStatus,
+				data:   []byte("ERR syntax error"),
+			}
 		}
-	case 7:
-		if res := preprocessLimit(4); res != nil {
-			return res
-		}
-	case 8:
-		if res := preprocessWithscores(); res != nil {
-			return res
-		}
-		if res := preprocessLimit(5); res != nil {
-			return res
-		}
-	default:
-		result.status = errStatus
-		result.data = []byte("ERR syntax error")
 	}
 
 	resp := IDBHandle.HustdbZrangebyscore(params)
