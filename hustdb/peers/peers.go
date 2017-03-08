@@ -68,7 +68,7 @@ func FetchHustdbStatPeers() []string {
 
 		if peer.Backends.Slave.Alive {
 			if _, ok := peerSet[peer.Backends.Slave.Host]; !ok {
-				peerSet[peer.Backends.Master.Host] = true
+				peerSet[peer.Backends.Slave.Host] = true
 				if !masterAlive {
 					peers = append(peers, peer.Backends.Slave.Host)
 				}

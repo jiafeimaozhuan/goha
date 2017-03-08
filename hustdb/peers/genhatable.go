@@ -53,6 +53,7 @@ func Init(path string) bool {
 	if !GenHashTable() {
 		return false
 	}
+
 	return GenGlobleHashtable()
 }
 
