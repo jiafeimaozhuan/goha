@@ -730,7 +730,7 @@ func zscoreHandle(args [][]byte) *Result {
 func zincrbyHandle(args [][]byte) *Result {
 	result := &Result{}
 	opt := "1"
-	if bytes.IndexByte(args[2], "-") == 0 {
+	if bytes.IndexByte(args[2], '-') == 0 {
 		args[2] = args[2][1:]
 		opt = "-1"
 	}
