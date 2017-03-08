@@ -7,8 +7,7 @@ import (
 )
 
 func (p *HustdbHandler) HustdbZismember(args map[string][]byte) *comm.HustdbResponse {
-	itb, ok := args["tb"]
-	tb := string(itb)
+	tb, ok := args["tb"]
 	if !ok {
 		return NilHustdbResponse
 	}
@@ -18,7 +17,7 @@ func (p *HustdbHandler) HustdbZismember(args map[string][]byte) *comm.HustdbResp
 	}
 	delete(args, "key")
 
-	backends := peers.FetchHustdbPeers(tb)
+	backends := peers.FetchHustdbPeers(string(tb))
 	for _, backend := range backends {
 		resp := comm.HustdbZismember(backend, args, key)
 		if resp.Code == comm.HttpOk {
@@ -30,8 +29,7 @@ func (p *HustdbHandler) HustdbZismember(args map[string][]byte) *comm.HustdbResp
 }
 
 func (p *HustdbHandler) HustdbZscore2(args map[string][]byte) *comm.HustdbResponse {
-	itb, ok := args["tb"]
-	tb := string(itb)
+	tb, ok := args["tb"]
 	if !ok {
 		return NilHustdbResponse
 	}
@@ -41,7 +39,7 @@ func (p *HustdbHandler) HustdbZscore2(args map[string][]byte) *comm.HustdbRespon
 	}
 	delete(args, "key")
 
-	backends := peers.FetchHustdbPeers(tb)
+	backends := peers.FetchHustdbPeers(string(tb))
 	if len(backends) == 0 {
 		return NilHustdbResponse
 	}
@@ -68,8 +66,7 @@ func (p *HustdbHandler) HustdbZscore2(args map[string][]byte) *comm.HustdbRespon
 }
 
 func (p *HustdbHandler) HustdbZscore(args map[string][]byte) *comm.HustdbResponse {
-	itb, ok := args["tb"]
-	tb := string(itb)
+	tb, ok := args["tb"]
 	if !ok {
 		return NilHustdbResponse
 	}
@@ -79,7 +76,7 @@ func (p *HustdbHandler) HustdbZscore(args map[string][]byte) *comm.HustdbRespons
 	}
 	delete(args, "key")
 
-	backends := peers.FetchHustdbPeers(tb)
+	backends := peers.FetchHustdbPeers(string(tb))
 
 	hustdbResp := &comm.HustdbResponse{Code: 0}
 	for _, backend := range backends {
@@ -94,8 +91,7 @@ func (p *HustdbHandler) HustdbZscore(args map[string][]byte) *comm.HustdbRespons
 }
 
 func (p *HustdbHandler) HustdbZadd(args map[string][]byte) *comm.HustdbResponse {
-	itb, ok := args["tb"]
-	tb := string(itb)
+	tb, ok := args["tb"]
 	if !ok {
 		return NilHustdbResponse
 	}
@@ -105,7 +101,7 @@ func (p *HustdbHandler) HustdbZadd(args map[string][]byte) *comm.HustdbResponse 
 	}
 	delete(args, "key")
 
-	backends := peers.FetchHustdbPeers(tb)
+	backends := peers.FetchHustdbPeers(string(tb))
 	if len(backends) == 0 {
 		return NilHustdbResponse
 	}
@@ -145,12 +141,11 @@ func (p *HustdbHandler) HustdbZadd(args map[string][]byte) *comm.HustdbResponse 
 }
 
 func (p *HustdbHandler) HustdbZrangebyscore(args map[string][]byte) *comm.HustdbResponse {
-	itb, ok := args["tb"]
-	tb := string(itb)
+	tb, ok := args["tb"]
 	if !ok {
 		return NilHustdbResponse
 	}
-	backends := peers.FetchHustdbPeers(tb)
+	backends := peers.FetchHustdbPeers(string(tb))
 	if len(backends) == 0 {
 		return NilHustdbResponse
 	}
@@ -174,8 +169,7 @@ func (p *HustdbHandler) HustdbZrangebyscore(args map[string][]byte) *comm.Hustdb
 }
 
 func (p *HustdbHandler) HustdbZrem(args map[string][]byte) *comm.HustdbResponse {
-	itb, ok := args["tb"]
-	tb := string(itb)
+	tb, ok := args["tb"]
 	if !ok {
 		return NilHustdbResponse
 	}
@@ -185,7 +179,7 @@ func (p *HustdbHandler) HustdbZrem(args map[string][]byte) *comm.HustdbResponse 
 		return NilHustdbResponse
 	}
 	delete(args, "key")
-	backends := peers.FetchHustdbPeers(tb)
+	backends := peers.FetchHustdbPeers(string(tb))
 	if len(backends) == 0 {
 		return NilHustdbResponse
 	}

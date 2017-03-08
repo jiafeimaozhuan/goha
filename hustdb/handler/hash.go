@@ -8,13 +8,12 @@ import (
 )
 
 func (p *HustdbHandler) HustdbHget(args map[string][]byte) *comm.HustdbResponse {
-	ikey, ok := args["key"]
-	key := string(ikey)
+	key, ok := args["key"]
 	if !ok {
 		return NilHustdbResponse
 	}
 
-	backends := peers.FetchHustdbPeers(key)
+	backends := peers.FetchHustdbPeers(string(key))
 	for _, backend := range backends {
 		resp := comm.HustdbHget(backend, args)
 		if resp.Code == comm.HttpOk {
@@ -27,13 +26,12 @@ func (p *HustdbHandler) HustdbHget(args map[string][]byte) *comm.HustdbResponse 
 }
 
 func (p *HustdbHandler) HustdbHget2(args map[string][]byte) *comm.HustdbResponse {
-	ikey, ok := args["key"]
-	key := string(ikey)
+	key, ok := args["key"]
 	if !ok {
 		return NilHustdbResponse
 	}
 
-	backends := peers.FetchHustdbPeers(key)
+	backends := peers.FetchHustdbPeers(string(key))
 	if len(backends) == 0 {
 		return NilHustdbResponse
 	}
@@ -58,8 +56,7 @@ func (p *HustdbHandler) HustdbHget2(args map[string][]byte) *comm.HustdbResponse
 }
 
 func (p *HustdbHandler) HustdbHset(args map[string][]byte) *comm.HustdbResponse {
-	ikey, ok := args["key"]
-	key := string(ikey)
+	key, ok := args["key"]
 	if !ok {
 		return NilHustdbResponse
 	}
@@ -69,7 +66,7 @@ func (p *HustdbHandler) HustdbHset(args map[string][]byte) *comm.HustdbResponse 
 	}
 	delete(args, "val")
 
-	backends := peers.FetchHustdbPeers(key)
+	backends := peers.FetchHustdbPeers(string(key))
 	if len(backends) == 0 {
 		return NilHustdbResponse
 	}
@@ -129,13 +126,12 @@ func (p *HustdbHandler) HustdbHexist(args map[string][]byte) *comm.HustdbRespons
 }
 
 func (p *HustdbHandler) HustdbHdel(args map[string][]byte) *comm.HustdbResponse {
-	ikey, ok := args["key"]
-	key := string(ikey)
+	key, ok := args["key"]
 	if !ok {
 		return NilHustdbResponse
 	}
 
-	backends := peers.FetchHustdbPeers(key)
+	backends := peers.FetchHustdbPeers(string(key))
 	if len(backends) == 0 {
 		return NilHustdbResponse
 	}
