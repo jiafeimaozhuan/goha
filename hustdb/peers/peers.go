@@ -54,19 +54,31 @@ func FetchHustdbStatPeers() []string {
 	HaTable.Rwlock.RLock()
 	defer HaTable.Rwlock.RUnlock()
 
-	var peers []string
+	peers := []string{}
+	peerSet := map[string]bool{}
+	masterAlive := false
 	for _, peer := range HaTable.HashTable {
 		if peer.Backends.Master.Alive {
-			peers = append(peers, peer.Backends.Master.Host)
-			continue
+			if _, ok := peerSet[peer.Backends.Master.Host]; !ok {
+				peerSet[peer.Backends.Master.Host] = true
+				peers = append(peers, peer.Backends.Master.Host)
+			}
+			masterAlive = true
 		}
 
 		if peer.Backends.Slave.Alive {
-			peers = append(peers, peer.Backends.Slave.Host)
+			if _, ok := peerSet[peer.Backends.Slave.Host]; !ok {
+				peerSet[peer.Backends.Master.Host] = true
+				if !masterAlive {
+					peers = append(peers, peer.Backends.Slave.Host)
+				}
+			}
 			continue
 		}
 
-		return nil
+		if !masterAlive {
+			return nil
+		}
 	}
 
 	return peers
