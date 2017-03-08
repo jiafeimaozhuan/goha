@@ -75,8 +75,15 @@ var (
 		"zrangebyscore": NewCmdHandler("zrangebyscore", 4, 0, nil, zrangeByScoreHandle),
 		"zrem":          NewCmdHandler("zrem", 3, 0, nil, zremHandle),
 		"zscore":        NewCmdHandler("zscore", 3, 3, nil, zscoreHandle),
-		"echo":          NewCmdHandler("echo", 2, 2, nil, echoHandle),
-		"ping":          NewCmdHandler("ping", 1, 1, nil, pingHandle),
+		"zincrby":       NewCmdHandler("zincrbyHandle", 4, 4, nil, zincrbyHandle),
+
+		"hlen":  NewCmdHandler("hlen", 2, 2, nil, hlenHandle),
+		"rpush": NewCmdHandler("rpushHandle", 3, 0, nil, nil),
+		"lpop":  NewCmdHandler("lpopHandle", 3, 0, nil, nil),
+		"llen":  NewCmdHandler("llenHandle", 3, 0, nil, nil),
+
+		"echo": NewCmdHandler("echo", 2, 2, nil, echoHandle),
+		"ping": NewCmdHandler("ping", 1, 1, nil, pingHandle),
 	}
 	// IDBHandle = &DBHandle{}
 	IDBHandle = db.NewHustdbHandler()
@@ -144,16 +151,15 @@ func setHandle(args [][]byte) *Result {
 		return nil
 	}
 
-
-	for i := 3; i < argc; i ++ {
+	for i := 3; i < argc; i++ {
 		arg := bytes.ToLower(args[i])
 		if bytes.Compare(arg, []byte("nx")) == 0 || bytes.Compare(arg, []byte("xx")) == 0 {
 			if result := checkNxXx(i); result != nil {
 				return result
 			}
-		} else if bytes.Compare(arg, []byte("ex")) == 0 || bytes.Compare(arg, []byte("px")) == 0 { 
+		} else if bytes.Compare(arg, []byte("ex")) == 0 || bytes.Compare(arg, []byte("px")) == 0 {
 			//At least ex have one argument
-			if i >= argc - 1 {
+			if i >= argc-1 {
 				return &Result{
 					status: errStatus,
 					data:   []byte("ERR syntax error"),
@@ -162,9 +168,9 @@ func setHandle(args [][]byte) *Result {
 				if result := checkTTL(i); result != nil {
 					return result
 				}
-				i+=1
+				i += 1
 			}
-			
+
 		} else {
 			return &Result{
 				status: errStatus,
@@ -362,6 +368,26 @@ func hsetHandle(args [][]byte) *Result {
 	}
 }
 
+func hlenHandle(args [][]byte) *Result {
+	result := &Result{
+		status:  integerStatus,
+		integer: 0,
+	}
+	params := map[string][]byte{
+		"tb": args[1],
+	}
+	resp := IDBHandle.HustdbStat(params)
+	if resp.Code == 200 {
+		hashSize, err := strconv.Atoi(string(resp.Data))
+		if err == nil {
+			if hashSize != -1 {
+				result.integer = hashSize
+			}
+		}
+	}
+	return result
+}
+
 func saddHandle(args [][]byte) *Result {
 	var addCnt int
 	argc := len(args[2:])
@@ -552,7 +578,7 @@ func zrangeByScoreHandle(args [][]byte) *Result {
 	if bytes.IndexByte(args[2], '(') == 0 {
 		args[2] = args[2][1:]
 		start_open_flag = true
-	} 
+	}
 	start, err = strconv.ParseFloat(utils.BytesToString(args[2]), 64)
 	if err != nil {
 		result.status = errStatus
@@ -562,7 +588,7 @@ func zrangeByScoreHandle(args [][]byte) *Result {
 	if bytes.IndexByte(args[3], '(') == 0 {
 		args[3] = args[3][1:]
 		end_open_flag = true
-	} 
+	}
 	end, err = strconv.ParseFloat(utils.BytesToString(args[3]), 64)
 	if err != nil {
 		result.status = errStatus
@@ -574,7 +600,7 @@ func zrangeByScoreHandle(args [][]byte) *Result {
 	}
 	if start_open_flag {
 		min = fmt.Sprintf("%f", start+1)
-	} else{
+	} else {
 		min = fmt.Sprintf("%f", start)
 	}
 
@@ -583,7 +609,7 @@ func zrangeByScoreHandle(args [][]byte) *Result {
 	} else {
 		max = fmt.Sprintf("%f", end)
 	}
-	
+
 	params := map[string][]byte{
 		"tb":  args[1],
 		"min": []byte(min),
@@ -608,7 +634,7 @@ func zrangeByScoreHandle(args [][]byte) *Result {
 		return nil
 	}
 
-	for i := 4; i < argc; i ++ {
+	for i := 4; i < argc; i++ {
 		arg := bytes.ToLower(args[i])
 		if bytes.Compare(arg, []byte("withscores")) == 0 {
 			if result := preprocessWithscores(); result != nil {
@@ -616,7 +642,7 @@ func zrangeByScoreHandle(args [][]byte) *Result {
 			}
 		} else if bytes.Compare(arg, []byte("limit")) == 0 {
 			//At least limit have two arguments
-			if i >= argc - 2 {
+			if i >= argc-2 {
 				return &Result{
 					status: errStatus,
 					data:   []byte("ERR syntax error"),
@@ -625,8 +651,8 @@ func zrangeByScoreHandle(args [][]byte) *Result {
 				if result := preprocessLimit(i); result != nil {
 					return result
 				}
-				i+=2
-			}		
+				i += 2
+			}
 		} else {
 			return &Result{
 				status: errStatus,
@@ -700,6 +726,93 @@ func zscoreHandle(args [][]byte) *Result {
 		}
 	}
 }
+
+func zincrbyHandle(args [][]byte) *Result {
+	result := &Result{}
+	opt := "1"
+	if bytes.IndexByte(args[2], '-') == 0 {
+		args[2] = args[2][1:]
+		opt = "-1"
+	}
+	_, err := strconv.ParseFloat(utils.BytesToString(args[2]), 64)
+	if err != nil {
+		result.status = errStatus
+		result.data = []byte("ERR hash value is not an double")
+		return result
+	}
+	params := map[string][]byte{
+		"tb":    args[1],
+		"score": args[2],
+		"key":   args[3],
+		"opt":   []byte(opt),
+	}
+	resp := IDBHandle.HustdbZadd(params)
+	if resp.Code == 200 {
+		result.status = successStatus
+		result.data = resp.Data
+	} else {
+		result.status = successStatus
+		result.data = []byte("0")
+	}
+	return result
+}
+
+/*
+func rpushHandle(args [][]byte) *Result {
+	result := &Result{}
+	params := map[string][]byte{
+		"queue": args[1],
+	}
+	for i := 2; i < len(args); i++ {
+		params["item"] = args[i]
+		IDBHandle.HustmqPut(params)
+	}
+	return result
+}
+
+func lpopHandle(args [][]byte) *Result {
+	result := &Result{}
+	params := map[string][]byte{
+		"queue":  args[1],
+		"worker": []byte("worker"),
+	}
+	resp := IDBHandle.HustmqGet(params)
+	if resp.Code == 200 {
+		result.status = successStatus
+		result.data = resp.Data
+	} else {
+		result.status = nilStatus
+	}
+	return result
+}
+
+func llenHandle(args [][]byte) *Result {
+	result := &Result{
+		status:  integerStatus,
+		integer: 0,
+	}
+
+	mqInfo := map[string]interface{}{}
+	params := map[string][]byte{
+		"queue": args[1],
+	}
+	resp := IDBHandle.HustmqStat(params)
+	if resp.Code == 200 {
+		if err := json.Unmarshal(resp.Data, &mqInfo); err == nil {
+			if _, ok := mqInfo["ready"]; ok {
+				if ready, ok := mqInfo["ready"].([]interface{}); ok {
+					for i := 0; i < len(ready); i++ {
+						if val, ok := ready[i].(float64); ok {
+							result.integer += int(val)
+						}
+					}
+				}
+			}
+		}
+	}
+	return result
+}
+*/
 
 func echoHandle(args [][]byte) *Result {
 	return &Result{
