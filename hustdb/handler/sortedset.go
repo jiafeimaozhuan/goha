@@ -129,6 +129,7 @@ func (p *HustdbHandler) HustdbZadd(args map[string][]byte) *comm.HustdbResponse 
 			if resp.Version > maxVer {
 				hustdbResp.Version = resp.Version
 				maxVer = resp.Version
+				hustdbResp.Data = resp.Data
 			}
 		} else {
 			putFailedBackend = resp.Backend

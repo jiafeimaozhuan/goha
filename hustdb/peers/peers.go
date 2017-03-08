@@ -1,8 +1,6 @@
 package peers
 
-import (
-	"../../internal/utils"
-)
+import "../../internal/utils"
 
 func FetchHustdbMaster(key string) string {
 	index := utils.LocateHashRegion(key)
@@ -50,4 +48,26 @@ func FetchHustdbHincrbyPeers(key string) []string {
 	}
 
 	return nil
+}
+
+func FetchHustdbStatPeers() []string {
+	HaTable.Rwlock.RLock()
+	defer HaTable.Rwlock.RUnlock()
+
+	var peers []string
+	for _, peer := range HaTable.HashTable {
+		if peer.Backends.Master.Alive {
+			peers = append(peers, peer.Backends.Master.Host)
+			continue
+		}
+
+		if peer.Backends.Slave.Alive {
+			peers = append(peers, peer.Backends.Slave.Host)
+			continue
+		}
+
+		return nil
+	}
+
+	return peers
 }

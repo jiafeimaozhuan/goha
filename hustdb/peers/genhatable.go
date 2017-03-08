@@ -1,6 +1,7 @@
 package peers
 
 import (
+	"fmt"
 	"sync"
 
 	"../../internal/utils"
@@ -53,6 +54,7 @@ func Init(path string) bool {
 	if !GenHashTable() {
 		return false
 	}
+	fmt.Println(FetchHustdbStatPeers())
 	return GenGlobleHashtable()
 }
 
