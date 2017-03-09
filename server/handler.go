@@ -78,6 +78,8 @@ var (
 		"zincrby":       NewCmdHandler("zincrbyHandle", 4, 4, nil, zincrbyHandle),
 
 		"hlen":  NewCmdHandler("hlen", 2, 2, nil, hlenHandle),
+		"scard": NewCmdHandler("scard", 2, 2, nil, scardHandle),
+		"zcard": NewCmdHandler("zcard", 2, 2, nil, zcardHandle),
 		"rpush": NewCmdHandler("rpushHandle", 3, 0, nil, nil),
 		"lpop":  NewCmdHandler("lpopHandle", 3, 0, nil, nil),
 		"llen":  NewCmdHandler("llenHandle", 3, 0, nil, nil),
@@ -457,6 +459,26 @@ func sremHandle(args [][]byte) *Result {
 	}
 }
 
+func scardHandle(args [][]byte) *Result {
+	result := &Result{
+		status:  integerStatus,
+		integer: 0,
+	}
+	params := map[string][]byte{
+		"tb": args[1],
+	}
+	resp := IDBHandle.HustdbStat(params)
+	if resp.Code == 200 {
+		setSize, err := strconv.Atoi(string(resp.Data))
+		if err == nil {
+			if setSize != -1 {
+				result.integer = setSize
+			}
+		}
+	}
+	return result
+}
+
 func zaddHandle(args [][]byte) *Result {
 	var addCnt int
 	argc := len(args[2:])
@@ -753,6 +775,26 @@ func zincrbyHandle(args [][]byte) *Result {
 	} else {
 		result.status = successStatus
 		result.data = []byte("0")
+	}
+	return result
+}
+
+func zcardHandle(args [][]byte) *Result {
+	result := &Result{
+		status:  integerStatus,
+		integer: 0,
+	}
+	params := map[string][]byte{
+		"tb": args[1],
+	}
+	resp := IDBHandle.HustdbStat(params)
+	if resp.Code == 200 {
+		sortedsetSize, err := strconv.Atoi(string(resp.Data))
+		if err == nil {
+			if sortedsetSize != -1 {
+				result.integer = sortedsetSize
+			}
+		}
 	}
 	return result
 }
