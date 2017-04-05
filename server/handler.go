@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 
 	db "../hustdb/handler"
 	"../internal/utils"
@@ -620,13 +621,18 @@ func zrangeByScoreHandle(args [][]byte) *Result {
 	if end < start {
 		return result
 	}
-	if start_open_flag {
+
+	if strings.ToLower(utils.BytesToString(args[2])) == "-inf" {
+		min = "-9223372036854775808"
+	} else if start_open_flag {
 		min = fmt.Sprintf("%f", start+1)
 	} else {
 		min = fmt.Sprintf("%f", start)
 	}
 
-	if end_open_flag {
+	if strings.ToLower(utils.BytesToString(args[3])) == "+inf" {
+		max = "9223372036854775807"
+	} else if end_open_flag {
 		max = fmt.Sprintf("%f", end-1)
 	} else {
 		max = fmt.Sprintf("%f", end)
