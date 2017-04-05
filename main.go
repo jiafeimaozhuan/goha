@@ -57,7 +57,7 @@ func main() {
 
 	gconf := utils.GetGlobalConf()
 
-	fmt.Printf("global conf :%v\n", gconf)
+	seelog.Debugf("global conf :%v\n", gconf)
 
 	comm.HustdbInit(&gconf.Hustdb)
 	hc.Init(gconf.HealthCheck.HealthCheckCycle)
